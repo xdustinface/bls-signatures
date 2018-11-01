@@ -311,7 +311,13 @@ InsecureSignature BLS::RecoverSig(const std::vector<InsecureSignature>& sigs, co
 }
 
 PublicKey BLS::DHKeyExchange(const PrivateKey& privKey, const PublicKey& pubKey) {
-    return pubKey.Exp(*privKey.keydata);
+    AssertInitialized();
+    if (!privKey.keydata) {
+        throw std::string("keydata not initialized");
+    }
+    PublicKey ret = pubKey.Exp(*privKey.keydata);
+    CheckRelicErrors();
+    return ret;
 }
 
 void BLS::CheckRelicErrors() {
