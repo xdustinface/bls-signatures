@@ -52,7 +52,7 @@ PublicKey::PublicKey(const PublicKey &pubKey) {
 
 PublicKey PublicKey::AggregateInsecure(std::vector<PublicKey> const& pubKeys) {
     if (pubKeys.empty()) {
-        throw std::string("Number of public keys must be at least 1");
+        throw std::length_error("Number of public keys must be at least 1");
     }
 
     PublicKey ret = pubKeys[0];
@@ -64,7 +64,7 @@ PublicKey PublicKey::AggregateInsecure(std::vector<PublicKey> const& pubKeys) {
 
 PublicKey PublicKey::Aggregate(std::vector<PublicKey> const& pubKeys) {
     if (pubKeys.size() < 1) {
-        throw std::string("Number of public keys must be at least 1");
+        throw std::length_error("Number of public keys must be at least 1");
     }
 
     std::vector<uint8_t*> serPubKeys(pubKeys.size());
