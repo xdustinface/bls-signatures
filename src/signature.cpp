@@ -54,7 +54,7 @@ InsecureSignature::InsecureSignature(const InsecureSignature &signature) {
 bool InsecureSignature::Verify(const std::vector<const uint8_t*>& hashes,
                                   const std::vector<PublicKey>& pubKeys) const {
     if (hashes.size() != pubKeys.size() || hashes.empty()) {
-        throw std::string("hashes and pubKeys vectors must be of same size and non-empty");
+        throw std::invalid_argument("hashes and pubKeys vectors must be of same size and non-empty");
     }
 
     g1_t *pubKeysNative = new g1_t[hashes.size() + 1];
@@ -107,7 +107,7 @@ bool InsecureSignature::VerifyNative(
 
 InsecureSignature InsecureSignature::Aggregate(const std::vector<InsecureSignature>& sigs) {
     if (sigs.empty()) {
-        throw std::string("sigs must not be empty");
+        throw std::length_error("sigs must not be empty");
     }
     InsecureSignature result = sigs[0];
     for (size_t i = 1; i < sigs.size(); i++) {
@@ -337,12 +337,12 @@ Signature Signature::AggregateSigs(
     for (const Signature &sig : sigs) {
         const AggregationInfo &info = *sig.GetAggregationInfo();
         if (info.Empty()) {
-            throw std::string("Signature must include aggregation info.");
+            throw std::invalid_argument("Signature must include aggregation info.");
         }
         std::vector<PublicKey> infoPubKeys = info.GetPubKeys();
         std::vector<uint8_t*> infoMessageHashes = info.GetMessageHashes();
         if (infoPubKeys.size() < 1 || infoMessageHashes.size() < 1) {
-            throw std::string("AggregationInfo must have items");
+            throw std::length_error("AggregationInfo must have items");
         }
         pubKeys.push_back(infoPubKeys);
         std::vector<uint8_t*> currMessageHashes;
@@ -356,11 +356,11 @@ Signature Signature::AggregateSigs(
 
     if (sigs.size() != pubKeys.size()
         || pubKeys.size() != messageHashes.size()) {
-        throw std::string("Lengths of vectors must match.");
+        throw std::length_error("Lengths of vectors must match.");
     }
     for (size_t i = 0; i < messageHashes.size(); i++) {
         if (pubKeys[i].size() != messageHashes[i].size()) {
-            throw std::string("Lengths of vectors must match.");
+            throw std::length_error("Lengths of vectors must match.");
         }
     }
     Signature ret = AggregateSigsInternal(sigs, pubKeys,
@@ -379,7 +379,7 @@ Signature Signature::AggregateSigsSecure(
         std::vector<uint8_t*> const &messageHashes) {
     if (sigs.size() != pubKeys.size() || sigs.size() != messageHashes.size()
         || sigs.size() < 1) {
-        throw std::string("Must have atleast one signature, key, and message");
+        throw std::invalid_argument("Must have atleast one signature, key, and message");
     }
 
     // Sort the public keys and signature by message + public key
@@ -436,11 +436,11 @@ Signature Signature::AggregateSigsInternal(
         std::vector<std::vector<uint8_t*> > const &messageHashes) {
     if (sigs.size() != pubKeys.size()
         || pubKeys.size() != messageHashes.size()) {
-        throw std::string("Lengths of std::vectors must match.");
+        throw std::length_error("Lengths of std::vectors must match.");
     }
     for (size_t i = 0; i < messageHashes.size(); i++) {
         if (pubKeys[i].size() != messageHashes[i].size()) {
-            throw std::string("Lengths of std::vectors must match.");
+            throw std::length_error("Lengths of std::vectors must match.");
         }
     }
 
@@ -588,7 +588,7 @@ Signature Signature::AggregateSigsInternal(
 
 Signature Signature::AggregateSigsSimple(std::vector<Signature> const &sigs) {
     if (sigs.size() < 1) {
-        throw std::string("Must have atleast one signatures and key");
+        throw std::length_error("Must have atleast one signatures and key");
     }
     if (sigs.size() == 1) {
         return sigs[0];
@@ -621,7 +621,7 @@ Signature Signature::DivideBy(std::vector<Signature> const &divisorSigs) const {
         std::vector<uint8_t*> messageHashes = divisorSig.GetAggregationInfo()
                 ->GetMessageHashes();
         if (pks.size() != messageHashes.size()) {
-            throw string("Invalid aggregation info.");
+            throw std::length_error("Invalid aggregation info.");
         }
         bn_t quotient;
         for (size_t i = 0; i < pks.size(); i++) {
@@ -636,7 +636,7 @@ Signature Signature::DivideBy(std::vector<Signature> const &divisorSigs) const {
                 aggregationInfo.GetExponent(&dividend, messageHashes[i],
                                             pks[i]);
             } catch (std::out_of_range e) {
-                throw string("Signature is not a subset.");
+                throw std::logic_error("Signature is not a subset.");
             }
 
             bn_t inverted;
@@ -651,8 +651,8 @@ Signature Signature::DivideBy(std::vector<Signature> const &divisorSigs) const {
                 bn_mod(newQuotient, newQuotient, ord);
 
                 if (bn_cmp(quotient, newQuotient) != CMP_EQ) {
-                    throw string("Cannot divide by aggregate signature,"
-                                 "msg/pk pairs are not unique");
+                    throw std::logic_error("Cannot divide by aggregate signature,"
+                                           "msg/pk pairs are not unique");
                 }
             }
             messageHashesToRemove.push_back(messageHashes[i]);

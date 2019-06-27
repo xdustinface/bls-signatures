@@ -318,7 +318,7 @@ void BLS::CheckRelicErrors() {
     }
     if (core_get()->code != STS_OK) {
         core_get()->code = STS_OK;
-        throw std::string("Relic library error");
+        throw std::invalid_argument("Relic library error");
     }
 }
 } // end namespace bls
