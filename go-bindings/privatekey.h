@@ -27,8 +27,6 @@ CPrivateKey CPrivateKeyFromSeed(void *p, int size);
 
 CPrivateKey CPrivateKeyFromBytes(void *p, bool modOrder, bool *didErr);
 
-CPrivateKey CPrivateKeyFromBN(void *bnBytesPtr, size_t bnSize);
-
 CPublicKey CPrivateKeyGetPublicKey(CPrivateKey inPtr);
 
 CPrivateKey CPrivateKeyAggregateInsecure(void **privateKeys,

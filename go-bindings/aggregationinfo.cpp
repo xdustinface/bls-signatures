@@ -181,27 +181,6 @@ uint8_t* CAggregationInfoGetMessageHashes(CAggregationInfo inPtr,
     return buffer;
 }
 
-void **CAggregationInfoGetExponents(CAggregationInfo inPtr,
-    size_t *sizesExponents) {
-    bls::AggregationInfo *ai = (bls::AggregationInfo*)inPtr;
-
-    std::vector<bls::PublicKey> pubKeys = ai->GetPubKeys();
-    std::vector<uint8_t*> hashes = ai->GetMessageHashes();
-
-    auto len = pubKeys.size();
-    void **buffer = static_cast<void**>(malloc(sizeof(bn_t) * len));
-
-    for (int i = 0; i < len; ++i) {
-        bn_t *exponent;
-        ai->GetExponent(exponent, hashes[i], pubKeys[i]);
-        size_t szBn = bn_size_bin(*exponent);
-        sizesExponents[i] = szBn;
-        bn_write_bin(static_cast<uint8_t*>(buffer[i]), szBn, *exponent);
-    }
-
-    return buffer;
-}
-
 int CBLSMessageHashLen() {
     return static_cast<int>(bls::BLS::MESSAGE_HASH_LEN);
 }

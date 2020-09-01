@@ -9,7 +9,6 @@ package blschia
 import "C"
 import (
 	"errors"
-	"math/big"
 	"runtime"
 	"unsafe"
 )
@@ -156,17 +155,4 @@ func PrivateKeyAggregate(privateKeys []PrivateKey, publicKeys []PublicKey) (Priv
 // Equal tests if one PrivateKey object is equal to another
 func (sk PrivateKey) Equal(other PrivateKey) bool {
 	return bool(C.CPrivateKeyIsEqual(sk.sk, other.sk))
-}
-
-// PrivateKeyFromBN constructs a new private key from a *big.Int
-func PrivateKeyFromBN(bn *big.Int) PrivateKey {
-	// Get a C pointer to bytes
-	bnBytes := bn.Bytes()
-	cBNBytesPtr := C.CBytes(bnBytes)
-	defer C.free(cBNBytesPtr)
-
-	var sk PrivateKey
-	sk.sk = C.CPrivateKeyFromBN(cBNBytesPtr, C.size_t(len(bnBytes)))
-	runtime.SetFinalizer(&sk, func(p *PrivateKey) { p.Free() })
-	return sk
 }

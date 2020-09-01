@@ -47,9 +47,6 @@ uint8_t* CAggregationInfoGetPubKeys(CAggregationInfo inPtr,
 uint8_t* CAggregationInfoGetMessageHashes(CAggregationInfo inPtr,
     size_t *retNumHashes);
 
-void **CAggregationInfoGetExponents(CAggregationInfo inPtr,
-    size_t *sizesExponents);
-
 bool CAggregationInfoEmpty(CAggregationInfo inPtr);
 bool CAggregationInfoIsEqual(CAggregationInfo aPtr, CAggregationInfo bPtr);
 bool CAggregationInfoIsLess(CAggregationInfo aPtr, CAggregationInfo bPtr);

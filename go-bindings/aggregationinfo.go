@@ -8,7 +8,6 @@ package blschia
 import "C"
 import (
 	"errors"
-	"math/big"
 	"runtime"
 	"unsafe"
 )
@@ -43,64 +42,6 @@ func AggregationInfoFromMsgHash(pk PublicKey, hash []byte) AggregationInfo {
 	ai.ai = C.CAggregationInfoFromMsgHash(pk.pk, cMessagePtr)
 	runtime.SetFinalizer(&ai, func(p *AggregationInfo) { p.Free() })
 	return ai
-}
-
-// AggregationInfoFromSlices creates an AggregationInfo object given a list of
-// public keys, a list of message hashes and a list of exponents
-func AggregationInfoFromSlices(publicKeys []PublicKey, messageHashes [][]byte, exponents []*big.Int) (AggregationInfo, error) {
-	// Get a C pointer to an array of public keys
-	cNumPublicKeys := C.size_t(len(publicKeys))
-	cPublicKeysPtr := C.AllocPtrArray(cNumPublicKeys)
-	defer C.FreePtrArray(cPublicKeysPtr)
-	// Loop thru each key and add the key C ptr to the array of ptrs at index
-	for i, key := range publicKeys {
-		C.SetPtrArray(cPublicKeysPtr, unsafe.Pointer(key.pk), C.int(i))
-	}
-
-	// Get a C pointer to an array of hashes
-	cNumHashes := C.size_t(len(messageHashes))
-	cHashArrayPtr := C.AllocPtrArray(cNumHashes)
-	defer C.FreePtrArray(cHashArrayPtr)
-	// Loop thru each message and add the key C ptr to the array of ptrs at
-	// index
-	for i, msg := range messageHashes {
-		// Get a C pointer to bytes
-		cHashPtr := C.CBytes(msg)
-		defer C.free(cHashPtr)
-		C.SetPtrArray(cHashArrayPtr, cHashPtr, C.int(i))
-	}
-
-	// Get a C pointer to pointer to bytes
-	cNumExponents := C.size_t(len(exponents))
-	cExponentsArrayPtr := C.AllocPtrArray(cNumExponents)
-	defer C.FreePtrArray(cExponentsArrayPtr)
-	// Get a C size_t pointer for (variable) sizes of exponents
-	sizesPtr := C.AllocIntPtr(cNumExponents)
-	defer C.FreeIntPtr(sizesPtr)
-	// Loop thru each exponent and add the bytes C ptr to the array of ptrs at
-	// index
-	for i, bn := range exponents {
-		// Get a C pointer to bytes
-		bnBytes := bn.Bytes()
-		C.SetIntPtrVal(sizesPtr, C.size_t(len(bnBytes)), C.int(i))
-		cBNBytesPtr := C.CBytes(bnBytes)
-		defer C.free(cBNBytesPtr)
-		C.SetPtrArray(cExponentsArrayPtr, cBNBytesPtr, C.int(i))
-	}
-
-	var ai AggregationInfo
-	var cDidErr C.bool
-	ai.ai = C.CAggregationInfoFromVectors(cPublicKeysPtr, cNumPublicKeys,
-		cHashArrayPtr, cNumHashes, cExponentsArrayPtr, cNumExponents, sizesPtr,
-		&cDidErr)
-	if bool(cDidErr) {
-		cErrMsg := C.GetLastErrorMsg()
-		err := errors.New(C.GoString(cErrMsg))
-		return AggregationInfo{}, err
-	}
-
-	runtime.SetFinalizer(&ai, func(p *AggregationInfo) { p.Free() })
-	return ai, nil
 }
 
 // Free releases memory allocated by the AggregationInfo object
@@ -213,28 +154,4 @@ func (ai AggregationInfo) GetMessageHashes() [][]byte {
 	}
 
 	return hashes
-}
-
-// GetExponents returns the exponents from the AggregationInfo object
-func (ai AggregationInfo) GetExponents() []*big.Int {
-	cNumExponents := C.CAggregationInfoGetLength(ai.ai)
-	numExponents := int(cNumExponents)
-
-	// Get a C size_t pointer for (variable) sizes of exponents
-	sizesPtr := C.AllocIntPtr(cNumExponents)
-	defer C.FreeIntPtr(sizesPtr)
-
-	// Get a C pointer to an array of exponents
-	cExpPtr := C.CAggregationInfoGetExponents(ai.ai, sizesPtr)
-	defer C.FreePtrArray(cExpPtr)
-
-	exponents := make([]*big.Int, numExponents)
-	for i := 0; i < numExponents; i++ {
-		ptr := C.GetPtrAtIndex(cExpPtr, C.int(i))
-		cSizePtr := C.GetIntPtrVal(sizesPtr, C.int(i))
-		expBytes := C.GoBytes(ptr, C.int(cSizePtr))
-		exponents[i] = new(big.Int).SetBytes(expBytes)
-	}
-
-	return exponents
 }

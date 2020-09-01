@@ -22,7 +22,6 @@
 #include "publickey.h"
 #include "privatekey.h"
 #include "signature.h"
-#include "threshold.h"
 
 #ifdef __cplusplus
 extern "C" {

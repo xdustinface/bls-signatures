@@ -167,13 +167,3 @@ bool CPrivateKeyIsEqual(CPrivateKey aPtr, CPrivateKey bPtr) {
 
     return *a == *b;
 }
-
-CPrivateKey CPrivateKeyFromBN(void *bnBytesPtr, size_t bnSize) {
-    bn_t sk;
-    bn_new(sk);
-
-    bn_read_bin(sk, static_cast<uint8_t*>(bnBytesPtr), bnSize);
-
-    bls::PrivateKey *key = new bls::PrivateKey(bls::PrivateKey::FromBN(sk));
-    return key;
-}
