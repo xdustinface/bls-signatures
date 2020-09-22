@@ -4,7 +4,7 @@ import (
 	"bytes"
 	"testing"
 
-	bls "github.com/nmarley/bls-signatures/go-bindings"
+	bls "github.com/dashpay/bls-signatures/go-bindings"
 )
 
 func TestChainCode(t *testing.T) {

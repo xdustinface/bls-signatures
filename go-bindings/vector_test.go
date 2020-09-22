@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"testing"
 
-	bls "github.com/nmarley/bls-signatures/go-bindings"
+	bls "github.com/dashpay/bls-signatures/go-bindings"
 )
 
 // Implements test vectors here:
