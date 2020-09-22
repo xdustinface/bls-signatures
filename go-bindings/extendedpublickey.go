@@ -1,6 +1,6 @@
 package blschia
 
-// #cgo LDFLAGS: -L../build -lbls -lstdc++
+// #cgo LDFLAGS: -L../build -lchiabls -lstdc++ -lgmp
 // #cgo CXXFLAGS: -std=c++14 -I../src -I../build/contrib/relic/include -I../contrib/relic/include
 // #include <stdbool.h>
 // #include <stdlib.h>
