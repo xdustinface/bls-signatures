@@ -123,7 +123,7 @@ CSignature CSignatureAggregate(void **sigs, size_t len, bool *didErr) {
 
     bls::Signature* sPtr;
     try {
-        bls::Signature s = bls::Signature::Aggregate(vecSigs);
+        bls::Signature s = bls::Signature::AggregateSigs(vecSigs);
         sPtr = new bls::Signature(s);
     } catch (const std::exception& ex) {
         // set err
