@@ -125,20 +125,6 @@ func TestSignature(t *testing.T) {
 	if !insecureSig4.Equal(insecureSig2) {
 		t.Error("insecureSig4 should be equal to insecureSig2")
 	}
-
-	// explicit release
-	insecureSig4.Free()
-	insecureSig3.Free()
-	insecureSig2.Free()
-	insecureSig1.Free()
-
-	sig7.Free()
-	sig6.Free()
-	sig5.Free()
-	sig4.Free()
-	sig3.Free()
-	sig2.Free()
-	sig1.Free()
 }
 
 func TestSignatureDivision(t *testing.T) {

@@ -27,7 +27,6 @@ func TestAggregationInfo(t *testing.T) {
 	if !ai.Empty() {
 		t.Error("expected AI to be empty")
 	}
-	ai.Free()
 
 	ai1 := bls.AggregationInfoFromMsgHash(pk1, mh)
 	pks := ai1.GetPubKeys()

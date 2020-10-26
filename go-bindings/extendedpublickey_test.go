@@ -71,9 +71,6 @@ func TestExtendedPublicKey(t *testing.T) {
 		t.Errorf("got key bytes %v, expected %v", actualPubKey, expectedPubKey)
 	}
 
-	xpub1.Free()
-	xpub2.Free()
-	xpub3.Free()
 }
 
 var xpubBytes = []byte{

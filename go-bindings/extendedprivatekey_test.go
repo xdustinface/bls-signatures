@@ -31,7 +31,6 @@ func TestExtendedPrivateKey(t *testing.T) {
 	if !xprv2.Equal(xprv1) {
 		t.Error("xprv2 should be equal to xprv1")
 	}
-	xprv1.Free()
 
 	expectedVersion := uint32(1)
 	actualVersion := xprv2.GetVersion()

@@ -23,8 +23,4 @@ func TestChainCode(t *testing.T) {
 	if !cc1.Equal(cc3) {
 		t.Error("cc1 should be equal to cc3")
 	}
-
-	cc1.Free()
-	cc2.Free()
-	cc3.Free()
 }

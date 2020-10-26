@@ -73,8 +73,6 @@ func TestPrivateKey(t *testing.T) {
 		t.Error("sk should be equal to sk2")
 	}
 
-	sk2.Free()
-
 	sk1, _ := bls.PrivateKeyFromBytes(sk1Bytes, true)
 	sk2, _ = bls.PrivateKeyFromBytes(sk2Bytes, true)
 	if sk1.Equal(sk2) {
@@ -113,12 +111,4 @@ func TestPrivateKey(t *testing.T) {
 	if !bytes.Equal(aggSkInsBytes, aggSkInsExpectedBytes) {
 		t.Errorf("got %v, expected %v", aggSkInsBytes, aggSkInsExpectedBytes)
 	}
-
-	aggSkIns.Free()
-	aggSk.Free()
-
-	sk2.Free()
-	sk1.Free()
-	pk.Free()
-	sk.Free()
 }
