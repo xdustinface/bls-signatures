@@ -19,7 +19,7 @@ type ExtendedPrivateKey struct {
 
 // ExtendedPrivateKeyFromSeed generates a master private key and chain code
 // from a seed
-func ExtendedPrivateKeyFromSeed(seed []byte) ExtendedPrivateKey {
+func ExtendedPrivateKeyFromSeed(seed []byte) *ExtendedPrivateKey {
 	// Get a C pointer to bytes
 	cBytesPtr := C.CBytes(seed)
 	defer C.free(cBytesPtr)
@@ -28,11 +28,11 @@ func ExtendedPrivateKeyFromSeed(seed []byte) ExtendedPrivateKey {
 	key.key = C.CExtendedPrivateKeyFromSeed(cBytesPtr, C.size_t(len(seed)))
 	runtime.SetFinalizer(&key, func(p *ExtendedPrivateKey) { p.Free() })
 
-	return key
+	return &key
 }
 
 // ExtendedPrivateKeyFromBytes parses a private key and chain code from bytes
-func ExtendedPrivateKeyFromBytes(data []byte) ExtendedPrivateKey {
+func ExtendedPrivateKeyFromBytes(data []byte) *ExtendedPrivateKey {
 	// Get a C pointer to bytes
 	cBytesPtr := C.CBytes(data)
 	defer C.free(cBytesPtr)
@@ -41,7 +41,7 @@ func ExtendedPrivateKeyFromBytes(data []byte) ExtendedPrivateKey {
 	key.key = C.CExtendedPrivateKeyFromBytes(cBytesPtr)
 	runtime.SetFinalizer(&key, func(p *ExtendedPrivateKey) { p.Free() })
 
-	return key
+	return &key
 }
 
 // Free releases memory allocated by the key
@@ -59,39 +59,39 @@ func (key ExtendedPrivateKey) Serialize() []byte {
 
 // GetPublicKey returns the PublicKey which corresponds to the PrivateKey for
 // the given node
-func (key ExtendedPrivateKey) GetPublicKey() PublicKey {
+func (key ExtendedPrivateKey) GetPublicKey() *PublicKey {
 	var pk PublicKey
 	pk.pk = C.CExtendedPrivateKeyGetPublicKey(key.key)
 	runtime.SetFinalizer(&pk, func(p *PublicKey) { p.Free() })
-	return pk
+	return &pk
 }
 
 // GetChainCode returns the ChainCode for the given node
-func (key ExtendedPrivateKey) GetChainCode() ChainCode {
+func (key ExtendedPrivateKey) GetChainCode() *ChainCode {
 	var cc ChainCode
 	cc.cc = C.CExtendedPrivateKeyGetChainCode(key.key)
 	runtime.SetFinalizer(&cc, func(p *ChainCode) { p.Free() })
-	return cc
+	return &cc
 }
 
 // PrivateChild derives a child ExtendedPrivateKey
-func (key ExtendedPrivateKey) PrivateChild(i uint32) ExtendedPrivateKey {
+func (key ExtendedPrivateKey) PrivateChild(i uint32) *ExtendedPrivateKey {
 	if key.GetDepth() >= 255 {
 		panic("cannot go further than 255 levels")
 	}
 	var child ExtendedPrivateKey
 	child.key = C.CExtendedPrivateKeyPrivateChild(key.key, C.uint(i))
 	runtime.SetFinalizer(&child, func(p *ExtendedPrivateKey) { p.Free() })
-	return child
+	return &child
 }
 
 // GetExtendedPublicKey returns the extended public key which corresponds to
 // the extended private key for the given node
-func (key ExtendedPrivateKey) GetExtendedPublicKey() ExtendedPublicKey {
+func (key ExtendedPrivateKey) GetExtendedPublicKey() *ExtendedPublicKey {
 	var xpub ExtendedPublicKey
 	xpub.key = C.CExtendedPrivateKeyGetExtendedPublicKey(key.key)
 	runtime.SetFinalizer(&xpub, func(p *ExtendedPublicKey) { p.Free() })
-	return xpub
+	return &xpub
 }
 
 // GetVersion returns the version bytes
@@ -115,16 +115,16 @@ func (key ExtendedPrivateKey) GetChildNumber() uint32 {
 }
 
 // GetPrivateKey returns the private key at the given node
-func (key ExtendedPrivateKey) GetPrivateKey() PrivateKey {
+func (key ExtendedPrivateKey) GetPrivateKey() *PrivateKey {
 	var sk PrivateKey
 	sk.sk = C.CExtendedPrivateKeyGetPrivateKey(key.key)
 	runtime.SetFinalizer(&sk, func(p *PrivateKey) { p.Free() })
-	return sk
+	return &sk
 }
 
 // Equal tests if one ExtendedPrivateKey object is equal to another
 //
 // Only the privatekey and chaincode material is tested
-func (key ExtendedPrivateKey) Equal(other ExtendedPrivateKey) bool {
+func (key ExtendedPrivateKey) Equal(other *ExtendedPrivateKey) bool {
 	return bool(C.CExtendedPrivateKeyIsEqual(key.key, other.key))
 }

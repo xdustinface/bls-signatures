@@ -24,7 +24,7 @@ type Signature struct {
 }
 
 // InsecureSignatureFromBytes constructs a new insecure signature from bytes
-func InsecureSignatureFromBytes(data []byte) (InsecureSignature, error) {
+func InsecureSignatureFromBytes(data []byte) (*InsecureSignature, error) {
 	// Get a C pointer to bytes
 	cBytesPtr := C.CBytes(data)
 	defer C.free(cBytesPtr)
@@ -35,11 +35,11 @@ func InsecureSignatureFromBytes(data []byte) (InsecureSignature, error) {
 	if bool(cDidErr) {
 		cErrMsg := C.GetLastErrorMsg()
 		err := errors.New(C.GoString(cErrMsg))
-		return InsecureSignature{}, err
+		return nil, err
 	}
 
 	runtime.SetFinalizer(&sig, func(p *InsecureSignature) { p.Free() })
-	return sig, nil
+	return &sig, nil
 }
 
 // Serialize returns the byte representation of the signature
@@ -55,7 +55,7 @@ func (sig InsecureSignature) Free() {
 }
 
 // SignatureFromBytes creates a new Signature object from the raw bytes
-func SignatureFromBytes(data []byte) (Signature, error) {
+func SignatureFromBytes(data []byte) (*Signature, error) {
 	// Get a C pointer to bytes
 	cBytesPtr := C.CBytes(data)
 	defer C.free(cBytesPtr)
@@ -66,11 +66,11 @@ func SignatureFromBytes(data []byte) (Signature, error) {
 	if bool(cDidErr) {
 		cErrMsg := C.GetLastErrorMsg()
 		err := errors.New(C.GoString(cErrMsg))
-		return Signature{}, err
+		return nil, err
 	}
 
 	runtime.SetFinalizer(&sig, func(p *Signature) { p.Free() })
-	return sig, nil
+	return &sig, nil
 }
 
 // Serialize returns the byte representation of the signature
@@ -92,7 +92,7 @@ func (sig Signature) Verify() bool {
 
 // SetAggregationInfo sets the aggregation information on this signature, which
 // describes how this signature was generated, and how it should be verified.
-func (sig Signature) SetAggregationInfo(ai AggregationInfo) {
+func (sig Signature) SetAggregationInfo(ai *AggregationInfo) {
 	C.CSignatureSetAggregationInfo(sig.sig, ai.ai)
 }
 
@@ -106,7 +106,7 @@ func (sig Signature) GetAggregationInfo() AggregationInfo {
 
 // SignatureAggregate aggregates many signatures using the secure aggregation
 // method.
-func SignatureAggregate(signatures []Signature) (Signature, error) {
+func SignatureAggregate(signatures []*Signature) (*Signature, error) {
 	// Get a C pointer to an array of signatures
 	cSigArrPtr := C.AllocPtrArray(C.size_t(len(signatures)))
 	defer C.FreePtrArray(cSigArrPtr)
@@ -123,20 +123,20 @@ func SignatureAggregate(signatures []Signature) (Signature, error) {
 	if bool(cDidErr) {
 		cErrMsg := C.GetLastErrorMsg()
 		err := errors.New(C.GoString(cErrMsg))
-		return Signature{}, err
+		return nil, err
 	}
 
 	runtime.SetFinalizer(&sig, func(p *Signature) { p.Free() })
-	return sig, nil
+	return &sig, nil
 }
 
 // DivideBy divides the aggregate signature (this) by a list of signatures.
 //
 // These divisors can be single or aggregate signatures, but all msg/pk pairs
 // in these signatures must be distinct and unique.
-func (sig Signature) DivideBy(signatures []Signature) (Signature, error) {
+func (sig Signature) DivideBy(signatures []*Signature) (*Signature, error) {
 	if len(signatures) == 0 {
-		return sig, nil
+		return &sig, nil
 	}
 
 	// Get a C pointer to an array of signatures
@@ -154,17 +154,17 @@ func (sig Signature) DivideBy(signatures []Signature) (Signature, error) {
 	if bool(cDidErr) {
 		cErrMsg := C.GetLastErrorMsg()
 		err := errors.New(C.GoString(cErrMsg))
-		return Signature{}, err
+		return nil, err
 	}
 
 	runtime.SetFinalizer(&quo, func(p *Signature) { p.Free() })
-	return quo, nil
+	return &quo, nil
 }
 
 // DivideBy insecurely divides signatures
-func (sig InsecureSignature) DivideBy(signatures []InsecureSignature) (InsecureSignature, error) {
+func (sig InsecureSignature) DivideBy(signatures []*InsecureSignature) (*InsecureSignature, error) {
 	if len(signatures) == 0 {
-		return sig, nil
+		return &sig, nil
 	}
 
 	// Get a C pointer to an array of signatures
@@ -182,18 +182,18 @@ func (sig InsecureSignature) DivideBy(signatures []InsecureSignature) (InsecureS
 	if bool(cDidErr) {
 		cErrMsg := C.GetLastErrorMsg()
 		err := errors.New(C.GoString(cErrMsg))
-		return InsecureSignature{}, err
+		return nil, err
 	}
 
 	runtime.SetFinalizer(&quo, func(p *InsecureSignature) { p.Free() })
-	return quo, nil
+	return &quo, nil
 }
 
 // Verify a single or aggregate signature
 //
 // This verification method is insecure in regard to the rogue public key
 // attack
-func (sig InsecureSignature) Verify(hashes [][]byte, publicKeys []PublicKey) bool {
+func (sig InsecureSignature) Verify(hashes [][]byte, publicKeys []*PublicKey) bool {
 	if (len(hashes) != len(publicKeys)) || len(hashes) == 0 {
 		// panic("hashes and pubKeys vectors must be of same size and non-empty")
 		return false
@@ -224,7 +224,7 @@ func (sig InsecureSignature) Verify(hashes [][]byte, publicKeys []PublicKey) boo
 }
 
 // InsecureSignatureAggregate insecurely aggregates signatures
-func InsecureSignatureAggregate(signatures []InsecureSignature) (InsecureSignature, error) {
+func InsecureSignatureAggregate(signatures []*InsecureSignature) (*InsecureSignature, error) {
 	// Get a C pointer to an array of signatures
 	cSigArrPtr := C.AllocPtrArray(C.size_t(len(signatures)))
 	defer C.FreePtrArray(cSigArrPtr)
@@ -240,26 +240,26 @@ func InsecureSignatureAggregate(signatures []InsecureSignature) (InsecureSignatu
 	if bool(cDidErr) {
 		cErrMsg := C.GetLastErrorMsg()
 		err := errors.New(C.GoString(cErrMsg))
-		return InsecureSignature{}, err
+		return nil, err
 	}
 
 	runtime.SetFinalizer(&sig, func(p *InsecureSignature) { p.Free() })
-	return sig, nil
+	return &sig, nil
 }
 
 // Equal tests if one InsecureSignature object is equal to another
-func (sig InsecureSignature) Equal(other InsecureSignature) bool {
+func (sig InsecureSignature) Equal(other *InsecureSignature) bool {
 	return bool(C.CInsecureSignatureIsEqual(sig.sig, other.sig))
 }
 
 // Equal tests if one Signature object is equal to another
-func (sig Signature) Equal(other Signature) bool {
+func (sig Signature) Equal(other *Signature) bool {
 	return bool(C.CSignatureIsEqual(sig.sig, other.sig))
 }
 
 // SignatureFromBytesWithAggregationInfo creates a new Signature object from
 // the raw bytes and aggregation info
-func SignatureFromBytesWithAggregationInfo(data []byte, ai AggregationInfo) (Signature, error) {
+func SignatureFromBytesWithAggregationInfo(data []byte, ai *AggregationInfo) (*Signature, error) {
 	// Get a C pointer to bytes
 	cBytesPtr := C.CBytes(data)
 	defer C.free(cBytesPtr)
@@ -270,35 +270,35 @@ func SignatureFromBytesWithAggregationInfo(data []byte, ai AggregationInfo) (Sig
 	if bool(cDidErr) {
 		cErrMsg := C.GetLastErrorMsg()
 		err := errors.New(C.GoString(cErrMsg))
-		return Signature{}, err
+		return nil, err
 	}
 
 	runtime.SetFinalizer(&sig, func(p *Signature) { p.Free() })
-	return sig, nil
+	return &sig, nil
 }
 
 // SignatureFromInsecureSig constructs a signature from an insecure signature
 // (but has no aggregation info)
-func SignatureFromInsecureSig(isig InsecureSignature) Signature {
+func SignatureFromInsecureSig(isig *InsecureSignature) *Signature {
 	var sig Signature
 	sig.sig = C.CSignatureFromInsecureSig(isig.sig)
 	runtime.SetFinalizer(&sig, func(p *Signature) { p.Free() })
-	return sig
+	return &sig
 }
 
 // SignatureFromInsecureSigWithAggregationInfo constructs a secure signature
 // from an insecure signature and aggregation info
-func SignatureFromInsecureSigWithAggregationInfo(isig InsecureSignature, ai AggregationInfo) Signature {
+func SignatureFromInsecureSigWithAggregationInfo(isig *InsecureSignature, ai *AggregationInfo) *Signature {
 	var sig Signature
 	sig.sig = C.CSignatureFromInsecureSigWithAggregationInfo(isig.sig, ai.ai)
 	runtime.SetFinalizer(&sig, func(p *Signature) { p.Free() })
-	return sig
+	return &sig
 }
 
 // GetInsecureSig returns an insecure signature from the secure variant
-func (sig Signature) GetInsecureSig() InsecureSignature {
+func (sig Signature) GetInsecureSig() *InsecureSignature {
 	var isig InsecureSignature
 	isig.sig = C.CSignatureGetInsecureSig(sig.sig)
 	runtime.SetFinalizer(&isig, func(p *InsecureSignature) { p.Free() })
-	return isig
+	return &isig
 }

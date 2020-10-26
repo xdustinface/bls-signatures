@@ -20,7 +20,7 @@ func TestAggregationInfo(t *testing.T) {
 		t.Error("ai should be equal to itself")
 	}
 
-	err := ai.RemoveEntries([][]byte{mh}, []bls.PublicKey{pk1})
+	err := ai.RemoveEntries([][]byte{mh}, []*bls.PublicKey{pk1})
 	if err != nil {
 		t.Errorf("got unexpected error: %v", err.Error())
 	}

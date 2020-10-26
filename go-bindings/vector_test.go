@@ -167,7 +167,7 @@ func TestVectorAggregation(t *testing.T) {
 	testPubkeys := [][]byte{pk1Bytes, pk2Bytes}
 	testPayloads := [][]byte{payload, payload}
 
-	sigs := make([]bls.Signature, len(testSigs))
+	sigs := make([]*bls.Signature, len(testSigs))
 	for i, sigBytes := range testSigs {
 		pub, _ := bls.PublicKeyFromBytes(testPubkeys[i])
 		aggInfo := bls.AggregationInfoFromMsg(pub, testPayloads[i])
@@ -202,7 +202,7 @@ func TestVectorAggregation(t *testing.T) {
 	sig4 := sk1.Sign([]byte{1, 2, 3, 4})
 	sig5 := sk2.Sign([]byte{1, 2})
 
-	aggSig2, _ := bls.SignatureAggregate([]bls.Signature{sig3, sig4, sig5})
+	aggSig2, _ := bls.SignatureAggregate([]*bls.Signature{sig3, sig4, sig5})
 	aggSig2Bytes := aggSig2.Serialize()
 	aggSig2Expected := []byte{
 		0x8b, 0x11, 0xda, 0xf7, 0x3c, 0xd0, 0x5f, 0x2f,
@@ -234,7 +234,7 @@ func TestVectorAggregation(t *testing.T) {
 	sig1.SetAggregationInfo(bls.AggregationInfoFromMsgHash(pk1, mh))
 	sig2.SetAggregationInfo(bls.AggregationInfoFromMsgHash(pk2, mh))
 
-	aggPk, err := bls.PublicKeyAggregate([]bls.PublicKey{pk1, pk2})
+	aggPk, err := bls.PublicKeyAggregate([]*bls.PublicKey{pk1, pk2})
 	if err != nil {
 		t.Errorf("got unexpected error: %v", err.Error())
 	}
@@ -294,8 +294,8 @@ func TestVectorAggregation2(t *testing.T) {
 	sig5 := sk1.Sign(m1)
 	sig6 := sk1.Sign(m4)
 
-	sigL, _ := bls.SignatureAggregate([]bls.Signature{sig1, sig2})
-	sigR, _ := bls.SignatureAggregate([]bls.Signature{sig3, sig4, sig5})
+	sigL, _ := bls.SignatureAggregate([]*bls.Signature{sig1, sig2})
+	sigR, _ := bls.SignatureAggregate([]*bls.Signature{sig3, sig4, sig5})
 	if !sigL.Verify() {
 		t.Errorf("sigL did not verify")
 	}
@@ -303,7 +303,7 @@ func TestVectorAggregation2(t *testing.T) {
 		t.Errorf("sigR did not verify")
 	}
 
-	sigFinal, _ := bls.SignatureAggregate([]bls.Signature{sigL, sigR, sig6})
+	sigFinal, _ := bls.SignatureAggregate([]*bls.Signature{sigL, sigR, sig6})
 	sigFinalBytes := sigFinal.Serialize()
 	sigFinalExpected := []byte{
 		0x07, 0x96, 0x99, 0x58, 0xfb, 0xf8, 0x2e, 0x65,
@@ -328,7 +328,7 @@ func TestVectorAggregation2(t *testing.T) {
 
 	// Begin Signature Division
 
-	quotient, _ := sigFinal.DivideBy([]bls.Signature{sig2, sig5, sig6})
+	quotient, _ := sigFinal.DivideBy([]*bls.Signature{sig2, sig5, sig6})
 	quotientBytes := quotient.Serialize()
 	quotientExpected := []byte{
 		0x8e, 0xbc, 0x8a, 0x73, 0xa2, 0x29, 0x1e, 0x68,
@@ -352,25 +352,25 @@ func TestVectorAggregation2(t *testing.T) {
 	}
 
 	// Ensure that dividing by an empty list returns the same signature
-	quotEmptyDiv, _ := quotient.DivideBy([]bls.Signature{})
+	quotEmptyDiv, _ := quotient.DivideBy([]*bls.Signature{})
 	if !quotEmptyDiv.Equal(quotient) {
 		t.Errorf("got %v, expected %v", quotEmptyDiv, quotient)
 	}
 
 	// should throw with not a subset
-	_, err := quotient.DivideBy([]bls.Signature{sig6})
+	_, err := quotient.DivideBy([]*bls.Signature{sig6})
 	if err == nil {
 		t.Error("did not get expected error")
 	}
 
 	// should NOT throw
-	_, err = sigFinal.DivideBy([]bls.Signature{sig1})
+	_, err = sigFinal.DivideBy([]*bls.Signature{sig1})
 	if err != nil {
 		t.Errorf("got unexpected error: %v", err.Error())
 	}
 
 	// should throw with not unique error
-	_, err = sigFinal.DivideBy([]bls.Signature{sigL})
+	_, err = sigFinal.DivideBy([]*bls.Signature{sigL})
 	if err == nil {
 		t.Error("did not get expected error")
 	}
@@ -379,10 +379,10 @@ func TestVectorAggregation2(t *testing.T) {
 	sig7 := sk2.Sign(m3)
 	sig8 := sk2.Sign(m4)
 
-	sigR2, _ := bls.SignatureAggregate([]bls.Signature{sig7, sig8})
-	sigFinal2, _ := bls.SignatureAggregate([]bls.Signature{sigFinal, sigR2})
+	sigR2, _ := bls.SignatureAggregate([]*bls.Signature{sig7, sig8})
+	sigFinal2, _ := bls.SignatureAggregate([]*bls.Signature{sigFinal, sigR2})
 
-	quotient2, _ := sigFinal2.DivideBy([]bls.Signature{sigR2})
+	quotient2, _ := sigFinal2.DivideBy([]*bls.Signature{sigR2})
 	quotient2Bytes := quotient2.Serialize()
 	quotient2Expected := []byte{
 		0x06, 0xaf, 0x69, 0x30, 0xbd, 0x06, 0x83, 0x8f,

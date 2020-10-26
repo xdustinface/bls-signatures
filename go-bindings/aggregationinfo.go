@@ -20,7 +20,7 @@ type AggregationInfo struct {
 
 // AggregationInfoFromMsg creates an AggregationInfo object given a PublicKey
 // and a message payload.
-func AggregationInfoFromMsg(pk PublicKey, message []byte) AggregationInfo {
+func AggregationInfoFromMsg(pk *PublicKey, message []byte) *AggregationInfo {
 	// Get a C pointer to bytes
 	cMessagePtr := C.CBytes(message)
 	defer C.free(cMessagePtr)
@@ -28,12 +28,12 @@ func AggregationInfoFromMsg(pk PublicKey, message []byte) AggregationInfo {
 	var ai AggregationInfo
 	ai.ai = C.CAggregationInfoFromMsg(pk.pk, cMessagePtr, C.size_t(len(message)))
 	runtime.SetFinalizer(&ai, func(p *AggregationInfo) { p.Free() })
-	return ai
+	return &ai
 }
 
 // AggregationInfoFromMsgHash creates an AggregationInfo object given a
 // PublicKey and a pre-hashed message payload.
-func AggregationInfoFromMsgHash(pk PublicKey, hash []byte) AggregationInfo {
+func AggregationInfoFromMsgHash(pk *PublicKey, hash []byte) *AggregationInfo {
 	// Get a C pointer to bytes
 	cMessagePtr := C.CBytes(hash)
 	defer C.free(cMessagePtr)
@@ -41,7 +41,7 @@ func AggregationInfoFromMsgHash(pk PublicKey, hash []byte) AggregationInfo {
 	var ai AggregationInfo
 	ai.ai = C.CAggregationInfoFromMsgHash(pk.pk, cMessagePtr)
 	runtime.SetFinalizer(&ai, func(p *AggregationInfo) { p.Free() })
-	return ai
+	return &ai
 }
 
 // Free releases memory allocated by the AggregationInfo object
@@ -50,7 +50,7 @@ func (ai AggregationInfo) Free() {
 }
 
 // MergeAggregationInfos merges multiple AggregationInfo objects into one.
-func MergeAggregationInfos(AIs []AggregationInfo) AggregationInfo {
+func MergeAggregationInfos(AIs []AggregationInfo) *AggregationInfo {
 	// Get a C pointer to an array of aggregation info objects
 	cAIsPtr := C.AllocPtrArray(C.size_t(len(AIs)))
 	defer C.FreePtrArray(cAIsPtr)
@@ -64,11 +64,11 @@ func MergeAggregationInfos(AIs []AggregationInfo) AggregationInfo {
 	ai.ai = C.MergeAggregationInfos(cAIsPtr, C.size_t(len(AIs)))
 	runtime.SetFinalizer(&ai, func(p *AggregationInfo) { p.Free() })
 
-	return ai
+	return &ai
 }
 
 // RemoveEntries removes the messages and pubkeys from the tree
-func (ai *AggregationInfo) RemoveEntries(messages [][]byte, publicKeys []PublicKey) error {
+func (ai *AggregationInfo) RemoveEntries(messages [][]byte, publicKeys []*PublicKey) error {
 	// Get a C pointer to an array of messages
 	cNumMessages := C.size_t(len(messages))
 	cMessageArrayPtr := C.AllocPtrArray(cNumMessages)
@@ -105,12 +105,12 @@ func (ai *AggregationInfo) RemoveEntries(messages [][]byte, publicKeys []PublicK
 }
 
 // Equal tests if two AggregationInfo objects are equal
-func (ai AggregationInfo) Equal(other AggregationInfo) bool {
+func (ai AggregationInfo) Equal(other *AggregationInfo) bool {
 	return bool(C.CAggregationInfoIsEqual(ai.ai, other.ai))
 }
 
 // Less tests if one AggregationInfo object is less than the other
-func (ai AggregationInfo) Less(other AggregationInfo) bool {
+func (ai AggregationInfo) Less(other *AggregationInfo) bool {
 	return bool(C.CAggregationInfoIsLess(ai.ai, other.ai))
 }
 
@@ -120,14 +120,14 @@ func (ai AggregationInfo) Empty() bool {
 }
 
 // GetPubKeys returns the PublicKeys referenced by the AggregationInfo object
-func (ai AggregationInfo) GetPubKeys() []PublicKey {
+func (ai AggregationInfo) GetPubKeys() []*PublicKey {
 	// Get a C pointer to an array of bytes
 	var cNumKeys C.size_t
 	cPubKeysPtr := C.CAggregationInfoGetPubKeys(ai.ai, &cNumKeys)
 	defer C.free(unsafe.Pointer(cPubKeysPtr))
 
 	numKeys := int(cNumKeys)
-	keys := make([]PublicKey, numKeys)
+	keys := make([]*PublicKey, numKeys)
 	for i := 0; i < numKeys; i++ {
 		keyPtr := C.GetAddressAtIndex(cPubKeysPtr, C.int(i))
 		pkBytes := C.GoBytes(unsafe.Pointer(keyPtr), C.CPublicKeySizeBytes())

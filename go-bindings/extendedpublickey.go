@@ -14,7 +14,7 @@ type ExtendedPublicKey struct {
 }
 
 // ExtendedPublicKeyFromBytes parses a public key and chain code from bytes
-func ExtendedPublicKeyFromBytes(data []byte) ExtendedPublicKey {
+func ExtendedPublicKeyFromBytes(data []byte) *ExtendedPublicKey {
 	// Get a C pointer to bytes
 	cBytesPtr := C.CBytes(data)
 	defer C.free(cBytesPtr)
@@ -23,7 +23,7 @@ func ExtendedPublicKeyFromBytes(data []byte) ExtendedPublicKey {
 	key.key = C.CExtendedPublicKeyFromBytes(cBytesPtr)
 	runtime.SetFinalizer(&key, func(p *ExtendedPublicKey) { p.Free() })
 
-	return key
+	return &key
 }
 
 // Free releases memory allocated by the key
@@ -40,17 +40,17 @@ func (key ExtendedPublicKey) Serialize() []byte {
 }
 
 // GetPublicKey returns the public key for the given node
-func (key ExtendedPublicKey) GetPublicKey() PublicKey {
+func (key ExtendedPublicKey) GetPublicKey() *PublicKey {
 	var pk PublicKey
 	pk.pk = C.CExtendedPublicKeyGetPublicKey(key.key)
 	runtime.SetFinalizer(&pk, func(p *PublicKey) { p.Free() })
-	return pk
+	return &pk
 }
 
 var childComparator uint32 = (1 << 31)
 
 // PublicChild derives a child extended public key
-func (key ExtendedPublicKey) PublicChild(i uint32) ExtendedPublicKey {
+func (key ExtendedPublicKey) PublicChild(i uint32) *ExtendedPublicKey {
 	// Hardened children have i >= 2^31. Non-hardened have i < 2^31
 	if i >= childComparator {
 		panic("cannot derive hardened children from public key")
@@ -62,7 +62,7 @@ func (key ExtendedPublicKey) PublicChild(i uint32) ExtendedPublicKey {
 	var child ExtendedPublicKey
 	child.key = C.CExtendedPublicKeyPublicChild(key.key, C.uint(i))
 	runtime.SetFinalizer(&child, func(p *ExtendedPublicKey) { p.Free() })
-	return child
+	return &child
 }
 
 // GetVersion returns the version bytes
@@ -86,14 +86,14 @@ func (key ExtendedPublicKey) GetChildNumber() uint32 {
 }
 
 // GetChainCode returns the ChainCode for the given node
-func (key ExtendedPublicKey) GetChainCode() ChainCode {
+func (key ExtendedPublicKey) GetChainCode() *ChainCode {
 	var cc ChainCode
 	cc.cc = C.CExtendedPublicKeyGetChainCode(key.key)
 	runtime.SetFinalizer(&cc, func(p *ChainCode) { p.Free() })
-	return cc
+	return &cc
 }
 
 // Equal tests if one ExtendedPublicKey object is equal to another
-func (key ExtendedPublicKey) Equal(other ExtendedPublicKey) bool {
+func (key ExtendedPublicKey) Equal(other *ExtendedPublicKey) bool {
 	return bool(C.CExtendedPublicKeyIsEqual(key.key, other.key))
 }

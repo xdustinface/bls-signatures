@@ -84,7 +84,7 @@ func TestPrivateKey(t *testing.T) {
 	pk1 := sk1.PublicKey()
 	pk2 := sk2.PublicKey()
 
-	aggSk, err := bls.PrivateKeyAggregate([]bls.PrivateKey{sk1, sk2}, []bls.PublicKey{pk1, pk2})
+	aggSk, err := bls.PrivateKeyAggregate([]*bls.PrivateKey{sk1, sk2}, []*bls.PublicKey{pk1, pk2})
 	if err != nil {
 		t.Errorf("got unexpected error: %v", err.Error())
 	}
@@ -99,7 +99,7 @@ func TestPrivateKey(t *testing.T) {
 		t.Errorf("got %v, expected %v", aggSkBytes, aggSkExpectedBytes)
 	}
 
-	aggSkIns, err := bls.PrivateKeyAggregateInsecure([]bls.PrivateKey{sk1, sk2})
+	aggSkIns, err := bls.PrivateKeyAggregateInsecure([]*bls.PrivateKey{sk1, sk2})
 	if err != nil {
 		t.Errorf("got unexpected error: %v", err.Error())
 	}

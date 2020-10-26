@@ -19,7 +19,7 @@ type PublicKey struct {
 }
 
 // PublicKeyFromBytes constructs a new public key from bytes
-func PublicKeyFromBytes(data []byte) (PublicKey, error) {
+func PublicKeyFromBytes(data []byte) (*PublicKey, error) {
 	// Get a C pointer to bytes
 	cBytesPtr := C.CBytes(data)
 	defer C.free(cBytesPtr)
@@ -30,11 +30,11 @@ func PublicKeyFromBytes(data []byte) (PublicKey, error) {
 	if bool(cDidErr) {
 		cErrMsg := C.GetLastErrorMsg()
 		err := errors.New(C.GoString(cErrMsg))
-		return PublicKey{}, err
+		return nil, err
 	}
 
 	runtime.SetFinalizer(&pk, func(p *PublicKey) { p.Free() })
-	return pk, nil
+	return &pk, nil
 }
 
 // Free releases memory allocated by the key
@@ -56,7 +56,7 @@ func (pk PublicKey) Fingerprint() uint32 {
 
 // PublicKeyAggregate securely aggregates multiple public keys into one by
 // exponentiating the keys with the pubKey hashes first
-func PublicKeyAggregate(keys []PublicKey) (PublicKey, error) {
+func PublicKeyAggregate(keys []*PublicKey) (*PublicKey, error) {
 	// Get a C pointer to an array of public keys
 	cPublicKeyArrayPtr := C.AllocPtrArray(C.size_t(len(keys)))
 	defer C.FreePtrArray(cPublicKeyArrayPtr)
@@ -72,16 +72,16 @@ func PublicKeyAggregate(keys []PublicKey) (PublicKey, error) {
 	if bool(cDidErr) {
 		cErrMsg := C.GetLastErrorMsg()
 		err := errors.New(C.GoString(cErrMsg))
-		return PublicKey{}, err
+		return nil, err
 	}
 
 	runtime.SetFinalizer(&key, func(p *PublicKey) { p.Free() })
-	return key, nil
+	return &key, nil
 }
 
 // PublicKeyAggregateInsecure insecurely aggregates multiple public keys into
 // one
-func PublicKeyAggregateInsecure(keys []PublicKey) (PublicKey, error) {
+func PublicKeyAggregateInsecure(keys []*PublicKey) (*PublicKey, error) {
 	// Get a C pointer to an array of public keys
 	cPublicKeyArrayPtr := C.AllocPtrArray(C.size_t(len(keys)))
 	defer C.FreePtrArray(cPublicKeyArrayPtr)
@@ -97,14 +97,14 @@ func PublicKeyAggregateInsecure(keys []PublicKey) (PublicKey, error) {
 	if bool(cDidErr) {
 		cErrMsg := C.GetLastErrorMsg()
 		err := errors.New(C.GoString(cErrMsg))
-		return PublicKey{}, err
+		return nil, err
 	}
 
 	runtime.SetFinalizer(&key, func(p *PublicKey) { p.Free() })
-	return key, nil
+	return &key, nil
 }
 
 // Equal tests if one PublicKey object is equal to another
-func (pk PublicKey) Equal(other PublicKey) bool {
+func (pk PublicKey) Equal(other *PublicKey) bool {
 	return bool(C.CPublicKeyIsEqual(pk.pk, other.pk))
 }

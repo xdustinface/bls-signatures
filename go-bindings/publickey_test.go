@@ -30,7 +30,7 @@ func TestPublicKey(t *testing.T) {
 		t.Errorf("pk1 fingerprint got %v, expected %v", pk1fp, pk1ExpectedFp)
 	}
 
-	aggPk, err := bls.PublicKeyAggregate([]bls.PublicKey{pk1, pk2})
+	aggPk, err := bls.PublicKeyAggregate([]*bls.PublicKey{pk1, pk2})
 	if err != nil {
 		t.Errorf("got unexpected error: %v", err.Error())
 	}
@@ -47,7 +47,7 @@ func TestPublicKey(t *testing.T) {
 		t.Errorf("got %v, expected %v", aggPkBytes, aggPkExpectedBytes)
 	}
 
-	aggPkIns, err := bls.PublicKeyAggregateInsecure([]bls.PublicKey{pk1, pk2})
+	aggPkIns, err := bls.PublicKeyAggregateInsecure([]*bls.PublicKey{pk1, pk2})
 	if err != nil {
 		t.Errorf("got unexpected error: %v", err.Error())
 	}
