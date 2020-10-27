@@ -51,47 +51,58 @@ func PrivateKeyFromBytes(data []byte, modOrder bool) (*PrivateKey, error) {
 }
 
 // Free releases memory allocated by the key
-func (sk PrivateKey) Free() {
+func (sk *PrivateKey) Free() {
 	C.CPrivateKeyFree(sk.sk)
+	runtime.KeepAlive(sk)
 }
 
 // Serialize returns the byte representation of the private key
-func (sk PrivateKey) Serialize() []byte {
+func (sk *PrivateKey) Serialize() []byte {
 	ptr := C.CPrivateKeySerialize(sk.sk)
 	defer C.SecFree(ptr)
+	runtime.KeepAlive(sk)
 	return C.GoBytes(ptr, C.CPrivateKeySizeBytes())
 }
 
 // PublicKey returns the public key which corresponds to the private key
-func (sk PrivateKey) PublicKey() *PublicKey {
+func (sk *PrivateKey) PublicKey() *PublicKey {
 	var pk PublicKey
 	pk.pk = C.CPrivateKeyGetPublicKey(sk.sk)
+
 	runtime.SetFinalizer(&pk, func(p *PublicKey) { p.Free() })
+	runtime.KeepAlive(sk)
+
 	return &pk
 }
 
 // SignInsecure signs a message without setting aggreagation info
-func (sk PrivateKey) SignInsecure(message []byte) *InsecureSignature {
+func (sk *PrivateKey) SignInsecure(message []byte) *InsecureSignature {
 	// Get a C pointer to bytes
 	cMessagePtr := C.CBytes(message)
 	defer C.free(cMessagePtr)
 
 	var sig InsecureSignature
 	sig.sig = C.CPrivateKeySignInsecure(sk.sk, cMessagePtr, C.size_t(len(message)))
+
 	runtime.SetFinalizer(&sig, func(p *InsecureSignature) { p.Free() })
+	runtime.KeepAlive(sk)
+
 	return &sig
 }
 
 // Sign securely signs a message, and sets and returns appropriate aggregation
 // info
-func (sk PrivateKey) Sign(message []byte) *Signature {
+func (sk *PrivateKey) Sign(message []byte) *Signature {
 	// Get a C pointer to bytes
 	cMessagePtr := C.CBytes(message)
 	defer C.free(cMessagePtr)
 
 	var sig Signature
 	sig.sig = C.CPrivateKeySign(sk.sk, cMessagePtr, C.size_t(len(message)))
+
 	runtime.SetFinalizer(&sig, func(p *Signature) { p.Free() })
+	runtime.KeepAlive(sk)
+
 	return &sig
 }
 
@@ -116,6 +127,8 @@ func PrivateKeyAggregateInsecure(privateKeys []*PrivateKey) (*PrivateKey, error)
 	}
 
 	runtime.SetFinalizer(&sk, func(p *PrivateKey) { p.Free() })
+	runtime.KeepAlive(privateKeys)
+
 	return &sk, nil
 }
 
@@ -149,10 +162,16 @@ func PrivateKeyAggregate(privateKeys []*PrivateKey, publicKeys []*PublicKey) (*P
 	}
 
 	runtime.SetFinalizer(&sk, func(p *PrivateKey) { p.Free() })
+	runtime.KeepAlive(privateKeys)
+	runtime.KeepAlive(publicKeys)
+
 	return &sk, nil
 }
 
 // Equal tests if one PrivateKey object is equal to another
-func (sk PrivateKey) Equal(other *PrivateKey) bool {
-	return bool(C.CPrivateKeyIsEqual(sk.sk, other.sk))
+func (sk *PrivateKey) Equal(other *PrivateKey) bool {
+	isEqual := bool(C.CPrivateKeyIsEqual(sk.sk, other.sk))
+	runtime.KeepAlive(sk)
+	runtime.KeepAlive(other)
+	return isEqual
 }

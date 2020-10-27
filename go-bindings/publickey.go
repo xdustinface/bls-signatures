@@ -38,20 +38,24 @@ func PublicKeyFromBytes(data []byte) (*PublicKey, error) {
 }
 
 // Free releases memory allocated by the key
-func (pk PublicKey) Free() {
+func (pk *PublicKey) Free() {
 	C.CPublicKeyFree(pk.pk)
+	runtime.KeepAlive(pk)
 }
 
 // Serialize returns the byte representation of the public key
-func (pk PublicKey) Serialize() []byte {
+func (pk *PublicKey) Serialize() []byte {
 	ptr := C.CPublicKeySerialize(pk.pk)
 	defer C.free(ptr)
+	runtime.KeepAlive(pk)
 	return C.GoBytes(ptr, C.CPublicKeySizeBytes())
 }
 
 // Fingerprint returns the first 4 bytes of the serialized key
-func (pk PublicKey) Fingerprint() uint32 {
-	return uint32(C.CPublicKeyGetFingerprint(pk.pk))
+func (pk *PublicKey) Fingerprint() uint32 {
+	fingerprint := uint32(C.CPublicKeyGetFingerprint(pk.pk))
+	runtime.KeepAlive(pk)
+	return fingerprint
 }
 
 // PublicKeyAggregate securely aggregates multiple public keys into one by
@@ -76,6 +80,8 @@ func PublicKeyAggregate(keys []*PublicKey) (*PublicKey, error) {
 	}
 
 	runtime.SetFinalizer(&key, func(p *PublicKey) { p.Free() })
+	runtime.KeepAlive(keys)
+
 	return &key, nil
 }
 
@@ -101,10 +107,15 @@ func PublicKeyAggregateInsecure(keys []*PublicKey) (*PublicKey, error) {
 	}
 
 	runtime.SetFinalizer(&key, func(p *PublicKey) { p.Free() })
+	runtime.KeepAlive(keys)
+
 	return &key, nil
 }
 
 // Equal tests if one PublicKey object is equal to another
-func (pk PublicKey) Equal(other *PublicKey) bool {
-	return bool(C.CPublicKeyIsEqual(pk.pk, other.pk))
+func (pk *PublicKey) Equal(other *PublicKey) bool {
+	isEqual := bool(C.CPublicKeyIsEqual(pk.pk, other.pk))
+	runtime.KeepAlive(pk)
+	runtime.KeepAlive(other)
+	return isEqual
 }

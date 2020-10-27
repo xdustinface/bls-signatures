@@ -43,15 +43,17 @@ func InsecureSignatureFromBytes(data []byte) (*InsecureSignature, error) {
 }
 
 // Serialize returns the byte representation of the signature
-func (sig InsecureSignature) Serialize() []byte {
+func (sig *InsecureSignature) Serialize() []byte {
 	ptr := C.CInsecureSignatureSerialize(sig.sig)
 	defer C.free(ptr)
+	runtime.KeepAlive(sig)
 	return C.GoBytes(ptr, C.CInsecureSignatureSizeBytes())
 }
 
 // Free releases memory allocated by the signature
-func (sig InsecureSignature) Free() {
+func (sig *InsecureSignature) Free() {
 	C.CInsecureSignatureFree(sig.sig)
+	runtime.KeepAlive(sig)
 }
 
 // SignatureFromBytes creates a new Signature object from the raw bytes
@@ -74,33 +76,39 @@ func SignatureFromBytes(data []byte) (*Signature, error) {
 }
 
 // Serialize returns the byte representation of the signature
-func (sig Signature) Serialize() []byte {
+func (sig *Signature) Serialize() []byte {
 	ptr := C.CSignatureSerialize(sig.sig)
 	defer C.free(ptr)
+	runtime.KeepAlive(sig)
 	return C.GoBytes(ptr, C.CSignatureSizeBytes())
 }
 
 // Free releases memory allocated by the signature
-func (sig Signature) Free() {
+func (sig *Signature) Free() {
 	C.CSignatureFree(sig.sig)
+	runtime.KeepAlive(sig)
 }
 
 // Verify a single or aggregate signature
-func (sig Signature) Verify() bool {
-	return bool(C.CSignatureVerify(sig.sig))
+func (sig *Signature) Verify() bool {
+	verifyResult := bool(C.CSignatureVerify(sig.sig))
+	runtime.KeepAlive(sig)
+	return verifyResult
 }
 
 // SetAggregationInfo sets the aggregation information on this signature, which
 // describes how this signature was generated, and how it should be verified.
-func (sig Signature) SetAggregationInfo(ai *AggregationInfo) {
+func (sig *Signature) SetAggregationInfo(ai *AggregationInfo) {
 	C.CSignatureSetAggregationInfo(sig.sig, ai.ai)
+	runtime.KeepAlive(sig)
+	runtime.KeepAlive(ai)
 }
 
 // GetAggregationInfo returns the aggregation info on this signature.
-func (sig Signature) GetAggregationInfo() AggregationInfo {
+func (sig *Signature) GetAggregationInfo() AggregationInfo {
 	var ai AggregationInfo
 	ai.ai = C.CSignatureGetAggregationInfo(sig.sig)
-	// nothing is newly allocated here, so no need to set a finalizer
+	runtime.KeepAlive(sig)
 	return ai
 }
 
@@ -127,6 +135,8 @@ func SignatureAggregate(signatures []*Signature) (*Signature, error) {
 	}
 
 	runtime.SetFinalizer(&sig, func(p *Signature) { p.Free() })
+	runtime.KeepAlive(signatures)
+
 	return &sig, nil
 }
 
@@ -134,9 +144,9 @@ func SignatureAggregate(signatures []*Signature) (*Signature, error) {
 //
 // These divisors can be single or aggregate signatures, but all msg/pk pairs
 // in these signatures must be distinct and unique.
-func (sig Signature) DivideBy(signatures []*Signature) (*Signature, error) {
+func (sig *Signature) DivideBy(signatures []*Signature) (*Signature, error) {
 	if len(signatures) == 0 {
-		return &sig, nil
+		return sig, nil
 	}
 
 	// Get a C pointer to an array of signatures
@@ -158,13 +168,16 @@ func (sig Signature) DivideBy(signatures []*Signature) (*Signature, error) {
 	}
 
 	runtime.SetFinalizer(&quo, func(p *Signature) { p.Free() })
+	runtime.KeepAlive(sig)
+	runtime.KeepAlive(signatures)
+
 	return &quo, nil
 }
 
 // DivideBy insecurely divides signatures
-func (sig InsecureSignature) DivideBy(signatures []*InsecureSignature) (*InsecureSignature, error) {
+func (sig *InsecureSignature) DivideBy(signatures []*InsecureSignature) (*InsecureSignature, error) {
 	if len(signatures) == 0 {
-		return &sig, nil
+		return sig, nil
 	}
 
 	// Get a C pointer to an array of signatures
@@ -186,6 +199,9 @@ func (sig InsecureSignature) DivideBy(signatures []*InsecureSignature) (*Insecur
 	}
 
 	runtime.SetFinalizer(&quo, func(p *InsecureSignature) { p.Free() })
+	runtime.KeepAlive(sig)
+	runtime.KeepAlive(signatures)
+
 	return &quo, nil
 }
 
@@ -193,7 +209,7 @@ func (sig InsecureSignature) DivideBy(signatures []*InsecureSignature) (*Insecur
 //
 // This verification method is insecure in regard to the rogue public key
 // attack
-func (sig InsecureSignature) Verify(hashes [][]byte, publicKeys []*PublicKey) bool {
+func (sig *InsecureSignature) Verify(hashes [][]byte, publicKeys []*PublicKey) bool {
 	if (len(hashes) != len(publicKeys)) || len(hashes) == 0 {
 		// panic("hashes and pubKeys vectors must be of same size and non-empty")
 		return false
@@ -219,8 +235,12 @@ func (sig InsecureSignature) Verify(hashes [][]byte, publicKeys []*PublicKey) bo
 		C.SetPtrArray(cPublicKeysPtr, unsafe.Pointer(key.pk), C.int(i))
 	}
 
-	return bool(C.CInsecureSignatureVerify(sig.sig, cHashesPtr, cNumHashes,
-		cPublicKeysPtr, cNumPublicKeys))
+	verifyResult := bool(C.CInsecureSignatureVerify(sig.sig, cHashesPtr, cNumHashes, cPublicKeysPtr, cNumPublicKeys))
+
+	runtime.KeepAlive(sig)
+	runtime.KeepAlive(publicKeys)
+
+	return verifyResult
 }
 
 // InsecureSignatureAggregate insecurely aggregates signatures
@@ -244,17 +264,25 @@ func InsecureSignatureAggregate(signatures []*InsecureSignature) (*InsecureSigna
 	}
 
 	runtime.SetFinalizer(&sig, func(p *InsecureSignature) { p.Free() })
+	runtime.KeepAlive(signatures)
+
 	return &sig, nil
 }
 
 // Equal tests if one InsecureSignature object is equal to another
-func (sig InsecureSignature) Equal(other *InsecureSignature) bool {
-	return bool(C.CInsecureSignatureIsEqual(sig.sig, other.sig))
+func (sig *InsecureSignature) Equal(other *InsecureSignature) bool {
+	isEqual := bool(C.CInsecureSignatureIsEqual(sig.sig, other.sig))
+	runtime.KeepAlive(sig)
+	runtime.KeepAlive(other)
+	return isEqual
 }
 
 // Equal tests if one Signature object is equal to another
-func (sig Signature) Equal(other *Signature) bool {
-	return bool(C.CSignatureIsEqual(sig.sig, other.sig))
+func (sig *Signature) Equal(other *Signature) bool {
+	isEqual := bool(C.CSignatureIsEqual(sig.sig, other.sig))
+	runtime.KeepAlive(sig)
+	runtime.KeepAlive(other)
+	return isEqual
 }
 
 // SignatureFromBytesWithAggregationInfo creates a new Signature object from
@@ -274,6 +302,8 @@ func SignatureFromBytesWithAggregationInfo(data []byte, ai *AggregationInfo) (*S
 	}
 
 	runtime.SetFinalizer(&sig, func(p *Signature) { p.Free() })
+	runtime.KeepAlive(ai)
+
 	return &sig, nil
 }
 
@@ -282,7 +312,10 @@ func SignatureFromBytesWithAggregationInfo(data []byte, ai *AggregationInfo) (*S
 func SignatureFromInsecureSig(isig *InsecureSignature) *Signature {
 	var sig Signature
 	sig.sig = C.CSignatureFromInsecureSig(isig.sig)
+
 	runtime.SetFinalizer(&sig, func(p *Signature) { p.Free() })
+	runtime.KeepAlive(isig)
+
 	return &sig
 }
 
@@ -291,14 +324,21 @@ func SignatureFromInsecureSig(isig *InsecureSignature) *Signature {
 func SignatureFromInsecureSigWithAggregationInfo(isig *InsecureSignature, ai *AggregationInfo) *Signature {
 	var sig Signature
 	sig.sig = C.CSignatureFromInsecureSigWithAggregationInfo(isig.sig, ai.ai)
+
 	runtime.SetFinalizer(&sig, func(p *Signature) { p.Free() })
+	runtime.KeepAlive(isig)
+	runtime.KeepAlive(ai)
+
 	return &sig
 }
 
 // GetInsecureSig returns an insecure signature from the secure variant
-func (sig Signature) GetInsecureSig() *InsecureSignature {
+func (sig *Signature) GetInsecureSig() *InsecureSignature {
 	var isig InsecureSignature
 	isig.sig = C.CSignatureGetInsecureSig(sig.sig)
+
 	runtime.SetFinalizer(&isig, func(p *InsecureSignature) { p.Free() })
+	runtime.KeepAlive(sig)
+
 	return &isig
 }

@@ -27,18 +27,23 @@ func ChainCodeFromBytes(data []byte) *ChainCode {
 }
 
 // Serialize returns the serialized byte representation of the ChainCode object
-func (cc ChainCode) Serialize() []byte {
+func (cc *ChainCode) Serialize() []byte {
 	ptr := C.CChainCodeSerialize(cc.cc)
 	defer C.free(ptr)
+	runtime.KeepAlive(cc)
 	return C.GoBytes(ptr, C.CChainCodeSizeBytes())
 }
 
 // Free releases memory allocated by the ChainCode object
-func (cc ChainCode) Free() {
+func (cc *ChainCode) Free() {
 	C.CChainCodeFree(cc.cc)
+	runtime.KeepAlive(cc)
 }
 
 // Equal tests if one ChainCode object is equal to another
-func (cc ChainCode) Equal(other *ChainCode) bool {
-	return bool(C.CChainCodeIsEqual(cc.cc, other.cc))
+func (cc *ChainCode) Equal(other *ChainCode) bool {
+	isEqual := bool(C.CChainCodeIsEqual(cc.cc, other.cc))
+	runtime.KeepAlive(cc)
+	runtime.KeepAlive(other)
+	return isEqual
 }

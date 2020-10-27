@@ -27,7 +27,10 @@ func AggregationInfoFromMsg(pk *PublicKey, message []byte) *AggregationInfo {
 
 	var ai AggregationInfo
 	ai.ai = C.CAggregationInfoFromMsg(pk.pk, cMessagePtr, C.size_t(len(message)))
+
 	runtime.SetFinalizer(&ai, func(p *AggregationInfo) { p.Free() })
+	runtime.KeepAlive(pk)
+
 	return &ai
 }
 
@@ -40,17 +43,21 @@ func AggregationInfoFromMsgHash(pk *PublicKey, hash []byte) *AggregationInfo {
 
 	var ai AggregationInfo
 	ai.ai = C.CAggregationInfoFromMsgHash(pk.pk, cMessagePtr)
+
 	runtime.SetFinalizer(&ai, func(p *AggregationInfo) { p.Free() })
+	runtime.KeepAlive(pk)
+
 	return &ai
 }
 
 // Free releases memory allocated by the AggregationInfo object
-func (ai AggregationInfo) Free() {
+func (ai *AggregationInfo) Free() {
 	C.CAggregationInfoFree(ai.ai)
+	runtime.KeepAlive(ai)
 }
 
 // MergeAggregationInfos merges multiple AggregationInfo objects into one.
-func MergeAggregationInfos(AIs []AggregationInfo) *AggregationInfo {
+func MergeAggregationInfos(AIs []*AggregationInfo) *AggregationInfo {
 	// Get a C pointer to an array of aggregation info objects
 	cAIsPtr := C.AllocPtrArray(C.size_t(len(AIs)))
 	defer C.FreePtrArray(cAIsPtr)
@@ -62,6 +69,8 @@ func MergeAggregationInfos(AIs []AggregationInfo) *AggregationInfo {
 
 	var ai AggregationInfo
 	ai.ai = C.MergeAggregationInfos(cAIsPtr, C.size_t(len(AIs)))
+
+	runtime.KeepAlive(AIs)
 	runtime.SetFinalizer(&ai, func(p *AggregationInfo) { p.Free() })
 
 	return &ai
@@ -101,26 +110,37 @@ func (ai *AggregationInfo) RemoveEntries(messages [][]byte, publicKeys []*Public
 		return err
 	}
 
+	runtime.KeepAlive(ai)
+	runtime.KeepAlive(publicKeys)
+
 	return nil
 }
 
 // Equal tests if two AggregationInfo objects are equal
-func (ai AggregationInfo) Equal(other *AggregationInfo) bool {
-	return bool(C.CAggregationInfoIsEqual(ai.ai, other.ai))
+func (ai *AggregationInfo) Equal(other *AggregationInfo) bool {
+	isEqual := bool(C.CAggregationInfoIsEqual(ai.ai, other.ai))
+	runtime.KeepAlive(ai)
+	runtime.KeepAlive(other)
+	return isEqual
 }
 
 // Less tests if one AggregationInfo object is less than the other
-func (ai AggregationInfo) Less(other *AggregationInfo) bool {
-	return bool(C.CAggregationInfoIsLess(ai.ai, other.ai))
+func (ai *AggregationInfo) Less(other *AggregationInfo) bool {
+	isLess := bool(C.CAggregationInfoIsLess(ai.ai, other.ai))
+	runtime.KeepAlive(ai)
+	runtime.KeepAlive(other)
+	return isLess
 }
 
 // Empty tests whether an AggregationInfo object is empty
-func (ai AggregationInfo) Empty() bool {
-	return bool(C.CAggregationInfoEmpty(ai.ai))
+func (ai *AggregationInfo) Empty() bool {
+	isEmpty := bool(C.CAggregationInfoEmpty(ai.ai))
+	runtime.KeepAlive(ai)
+	return isEmpty
 }
 
 // GetPubKeys returns the PublicKeys referenced by the AggregationInfo object
-func (ai AggregationInfo) GetPubKeys() []*PublicKey {
+func (ai *AggregationInfo) GetPubKeys() []*PublicKey {
 	// Get a C pointer to an array of bytes
 	var cNumKeys C.size_t
 	cPubKeysPtr := C.CAggregationInfoGetPubKeys(ai.ai, &cNumKeys)
@@ -134,12 +154,14 @@ func (ai AggregationInfo) GetPubKeys() []*PublicKey {
 		keys[i], _ = PublicKeyFromBytes(pkBytes)
 	}
 
+	runtime.KeepAlive(ai)
+
 	return keys
 }
 
 // GetMessageHashes returns the message hashes referenced by the
 // AggregationInfo object
-func (ai AggregationInfo) GetMessageHashes() [][]byte {
+func (ai *AggregationInfo) GetMessageHashes() [][]byte {
 	// Get a C pointer to an array of message hashes
 	var cNumHashes C.size_t
 	hashPtr := C.CAggregationInfoGetMessageHashes(ai.ai, &cNumHashes)
@@ -152,6 +174,8 @@ func (ai AggregationInfo) GetMessageHashes() [][]byte {
 		hashPtr := C.GetAddressAtIndex(hashPtr, C.int(i))
 		hashes[i] = C.GoBytes(hashPtr, C.CBLSMessageHashLen())
 	}
+
+	runtime.KeepAlive(ai)
 
 	return hashes
 }
