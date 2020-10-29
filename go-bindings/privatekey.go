@@ -90,6 +90,21 @@ func (sk *PrivateKey) SignInsecure(message []byte) *InsecureSignature {
 	return &sig
 }
 
+// SignInsecurePrehashed signs a message without setting aggreagation info
+func (sk *PrivateKey) SignInsecurePrehashed(hash []byte) *InsecureSignature {
+	// Get a C pointer to bytes
+	cHashPtr := C.CBytes(hash)
+	defer C.free(cHashPtr)
+
+	var sig InsecureSignature
+	sig.sig = C.CPrivateKeySignInsecurePrehashed(sk.sk, cHashPtr)
+
+	runtime.KeepAlive(sk)
+	runtime.SetFinalizer(&sig, func(p *InsecureSignature) { p.Free() })
+
+	return &sig
+}
+
 // Sign securely signs a message, and sets and returns appropriate aggregation
 // info
 func (sk *PrivateKey) Sign(message []byte) *Signature {
