@@ -154,8 +154,8 @@ func (sig *Signature) DivideBy(signatures []*Signature) (*Signature, error) {
 	defer C.FreePtrArray(cSigArrPtr)
 	// Loop thru each sig and add the pointer to it, to the C pointer array at
 	// the given index.
-	for i, sig := range signatures {
-		C.SetPtrArray(cSigArrPtr, unsafe.Pointer(sig.sig), C.int(i))
+	for i, signature := range signatures {
+		C.SetPtrArray(cSigArrPtr, unsafe.Pointer(signature.sig), C.int(i))
 	}
 
 	var quo Signature
