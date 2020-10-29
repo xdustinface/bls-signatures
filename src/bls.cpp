@@ -31,28 +31,22 @@ Util::SecureFreeCallback Util::secureFreeCallback;
 static void relic_core_initializer(void* ptr) {
     core_init();
     if (err_get_code() != STS_OK) {
-        std::cout << "core_init() failed";
-        // this will most likely crash the application...but there isn't much we can do
-        throw std::string("core_init() failed");
+        throw std::runtime_error("core_init() failed");
     }
 
     const int r = ep_param_set_any_pairf();
     if (r != STS_OK) {
-        std::cout << "ep_param_set_any_pairf() failed";
-        // this will most likely crash the application...but there isn't much we can do
-        throw std::string("ep_param_set_any_pairf() failed");
+        throw std::runtime_error("ep_param_set_any_pairf() failed");
     }
 }
 
 bool BLS::Init() {
     if (ALLOC != AUTO) {
-        std::cout << "Must have ALLOC == AUTO";
-        throw std::string("Must have ALLOC == AUTO");
+        throw std::runtime_error("Must have ALLOC == AUTO");
     }
 #if BLSALLOC_SODIUM
     if (sodium_init() < 0) {
-        std::cout << "libsodium init failed";
-        throw std::string("libsodium init failed");
+        throw std::runtime_error("libsodium init failed");
     }
     SetSecureAllocator(libsodium::sodium_malloc, libsodium::sodium_free);
 #else
@@ -188,7 +182,7 @@ static inline BLSType PolyEvaluate(const std::vector<BLSType>& vec, const uint8_
     Ops ops;
 
     if (vec.size() < 2) {
-        throw std::string("At least 2 coefficients required");
+        throw std::length_error("At least 2 coefficients required");
     }
 
     bn_t x;
@@ -214,10 +208,10 @@ static inline BLSType LagrangeInterpolate(const std::vector<BLSType>& vec, const
     Ops ops;
 
     if (vec.size() < 2) {
-        throw std::string("At least 2 shares required");
+        throw std::length_error("At least 2 shares required");
     }
     if (vec.size() != ids.size()) {
-        throw std::string("Numbers of shares and ids must be equal");
+        throw std::length_error("Numbers of shares and ids must be equal");
     }
 
     /*
@@ -247,7 +241,7 @@ static inline BLSType LagrangeInterpolate(const std::vector<BLSType>& vec, const
     if (bn_is_zero(a)) {
         delete[] delta;
         delete[] ids2;
-        throw std::string("Zero id");
+        throw std::invalid_argument("Zero id");
     }
     for (size_t i = 0; i < k; i++) {
         bn_copy(b, ids2[i]);
@@ -257,7 +251,7 @@ static inline BLSType LagrangeInterpolate(const std::vector<BLSType>& vec, const
                 if (bn_is_zero(v)) {
                     delete[] delta;
                     delete[] ids2;
-                    throw std::string("Duplicate id");
+                    throw std::invalid_argument("Duplicate id");
                 }
                 ops.MulFP(b, b, v);
             }
@@ -305,7 +299,7 @@ InsecureSignature BLS::RecoverSig(const std::vector<InsecureSignature>& sigs, co
 
 PublicKey BLS::DHKeyExchange(const PrivateKey& privKey, const PublicKey& pubKey) {
     if (!privKey.keydata) {
-        throw std::string("keydata not initialized");
+        throw std::invalid_argument("keydata not initialized");
     }
     PublicKey ret = pubKey.Exp(*privKey.keydata);
     CheckRelicErrors();
@@ -314,7 +308,7 @@ PublicKey BLS::DHKeyExchange(const PrivateKey& privKey, const PublicKey& pubKey)
 
 void BLS::CheckRelicErrors() {
     if (!core_get()) {
-        throw std::string("Library not initialized properly. Call BLS::Init()");
+        throw std::runtime_error("Library not initialized properly. Call BLS::Init()");
     }
     if (core_get()->code != STS_OK) {
         core_get()->code = STS_OK;
