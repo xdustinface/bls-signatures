@@ -269,6 +269,44 @@ func InsecureSignatureAggregate(signatures []*InsecureSignature) (*InsecureSigna
 	return &sig, nil
 }
 
+// InsecureSignatureRecover try to recover a threshold signature
+func InsecureSignatureRecover(signatures []*InsecureSignature, ids []Hash) (*InsecureSignature, error) {
+
+	if len(signatures) != len(ids) {
+		return nil, errors.New("number of signatures must match the number of ids")
+	}
+
+	cSigArrPtr := C.AllocPtrArray(C.size_t(len(signatures)))
+	defer C.FreePtrArray(cSigArrPtr)
+	for i, sig := range signatures {
+		C.SetPtrArray(cSigArrPtr, unsafe.Pointer(sig.sig), C.int(i))
+	}
+
+	cIdsArrPtr := C.AllocPtrArray(C.size_t(len(ids)))
+	defer C.FreePtrArray(cIdsArrPtr)
+	for i, id := range ids {
+		cIDPtr := C.CBytes(id[:])
+		C.SetPtrArray(cIdsArrPtr, cIDPtr, C.int(i))
+	}
+
+	var recoveredSig InsecureSignature
+	var cDidErr C.bool
+	recoveredSig.sig = C.CInsecureSignatureRecover(cSigArrPtr, cIdsArrPtr, C.size_t(len(signatures)), &cDidErr)
+	if bool(cDidErr) {
+		cErrMsg := C.GetLastErrorMsg()
+		err := errors.New(C.GoString(cErrMsg))
+		return nil, err
+	}
+
+	for i := range ids {
+		C.free(C.GetPtrAtIndex(cIdsArrPtr, C.int(i)))
+	}
+
+	runtime.SetFinalizer(&recoveredSig, func(p *InsecureSignature) { p.Free() })
+
+	return &recoveredSig, nil
+}
+
 // Equal tests if one InsecureSignature object is equal to another
 func (sig *InsecureSignature) Equal(other *InsecureSignature) bool {
 	isEqual := bool(C.CInsecureSignatureIsEqual(sig.sig, other.sig))
