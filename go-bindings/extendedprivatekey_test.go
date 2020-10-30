@@ -2,6 +2,7 @@ package blschia_test
 
 import (
 	"bytes"
+	"fmt"
 	"testing"
 
 	bls "github.com/dashpay/bls-signatures/go-bindings"
@@ -76,6 +77,15 @@ func TestExtendedPrivateKey(t *testing.T) {
 	actualPrivKey := xprv2.GetPrivateKey().Serialize()
 	if !bytes.Equal(actualPrivKey, expectedPrivKey) {
 		t.Errorf("got key bytes %v, expected %v", actualPrivKey, expectedPrivKey)
+	}
+
+	xprv3, err := bls.ExtendedPrivateKeyFromString(fmt.Sprintf("%x", xprv2.Serialize()))
+	if err != nil {
+		t.Error(err)
+	}
+
+	if !xprv3.Equal(xprv2) {
+		t.Error("xprv3 should be equal to xprv2")
 	}
 }
 

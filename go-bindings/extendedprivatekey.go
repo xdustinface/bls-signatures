@@ -9,7 +9,10 @@ package blschia
 // #include "publickey.h"
 // #include "blschia.h"
 import "C"
-import "runtime"
+import (
+	"encoding/hex"
+	"runtime"
+)
 
 // ExtendedPrivateKey represents a BIP-32 style extended key, which is composed
 // of a private key and a chain code.
@@ -42,6 +45,15 @@ func ExtendedPrivateKeyFromBytes(data []byte) *ExtendedPrivateKey {
 	runtime.SetFinalizer(&key, func(p *ExtendedPrivateKey) { p.Free() })
 
 	return &key
+}
+
+// ExtendedPrivateKeyFromString constructs a new extended private key from hex string
+func ExtendedPrivateKeyFromString(hexString string) (*ExtendedPrivateKey, error) {
+	bytes, err := hex.DecodeString(hexString)
+	if err != nil {
+		return nil, err
+	}
+	return ExtendedPrivateKeyFromBytes(bytes), nil
 }
 
 // Free releases memory allocated by the key

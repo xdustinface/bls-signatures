@@ -8,6 +8,7 @@ package blschia
 // #include "blschia.h"
 import "C"
 import (
+	"encoding/hex"
 	"errors"
 	"runtime"
 	"unsafe"
@@ -35,6 +36,15 @@ func PublicKeyFromBytes(data []byte) (*PublicKey, error) {
 
 	runtime.SetFinalizer(&pk, func(p *PublicKey) { p.Free() })
 	return &pk, nil
+}
+
+// PublicKeyFromString constructs a new public key from hex string
+func PublicKeyFromString(hexString string) (*PublicKey, error) {
+	bytes, err := hex.DecodeString(hexString)
+	if err != nil {
+		return nil, err
+	}
+	return PublicKeyFromBytes(bytes)
 }
 
 // Free releases memory allocated by the key

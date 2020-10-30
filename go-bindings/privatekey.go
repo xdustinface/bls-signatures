@@ -8,6 +8,7 @@ package blschia
 // #include "blschia.h"
 import "C"
 import (
+	"encoding/hex"
 	"errors"
 	"runtime"
 	"unsafe"
@@ -48,6 +49,15 @@ func PrivateKeyFromBytes(data []byte, modOrder bool) (*PrivateKey, error) {
 
 	runtime.SetFinalizer(&sk, func(p *PrivateKey) { p.Free() })
 	return &sk, nil
+}
+
+// PrivateKeyFromString constructs a new private key from hex string
+func PrivateKeyFromString(hexString string) (*PrivateKey, error) {
+	bytes, err := hex.DecodeString(hexString)
+	if err != nil {
+		return nil, err
+	}
+	return PrivateKeyFromBytes(bytes, false)
 }
 
 // Free releases memory allocated by the key

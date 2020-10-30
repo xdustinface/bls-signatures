@@ -2,6 +2,7 @@ package blschia_test
 
 import (
 	"bytes"
+	"fmt"
 	"testing"
 
 	bls "github.com/dashpay/bls-signatures/go-bindings"
@@ -71,6 +72,14 @@ func TestExtendedPublicKey(t *testing.T) {
 		t.Errorf("got key bytes %v, expected %v", actualPubKey, expectedPubKey)
 	}
 
+	xpub4, err := bls.ExtendedPublicKeyFromString(fmt.Sprintf("%x", xpub1GotBytes))
+	if err != nil {
+		t.Error(err)
+	}
+
+	if !xpub4.Equal(xpub1) {
+		t.Error("xpub4 should be equal to xpub1")
+	}
 }
 
 var xpubBytes = []byte{

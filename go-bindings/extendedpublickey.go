@@ -6,7 +6,10 @@ package blschia
 // #include <stdlib.h>
 // #include "blschia.h"
 import "C"
-import "runtime"
+import (
+	"encoding/hex"
+	"runtime"
+)
 
 // ExtendedPublicKey represents a BIP-32 style extended public key
 type ExtendedPublicKey struct {
@@ -24,6 +27,15 @@ func ExtendedPublicKeyFromBytes(data []byte) *ExtendedPublicKey {
 	runtime.SetFinalizer(&key, func(p *ExtendedPublicKey) { p.Free() })
 
 	return &key
+}
+
+// ExtendedPublicKeyFromString constructs a new extended public key from hex string
+func ExtendedPublicKeyFromString(hexString string) (*ExtendedPublicKey, error) {
+	bytes, err := hex.DecodeString(hexString)
+	if err != nil {
+		return nil, err
+	}
+	return ExtendedPublicKeyFromBytes(bytes), nil
 }
 
 // Free releases memory allocated by the key

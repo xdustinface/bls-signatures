@@ -111,4 +111,13 @@ func TestPrivateKey(t *testing.T) {
 	if !bytes.Equal(aggSkInsBytes, aggSkInsExpectedBytes) {
 		t.Errorf("got %v, expected %v", aggSkInsBytes, aggSkInsExpectedBytes)
 	}
+
+	sk3, err := bls.PrivateKeyFromString("543d7c46cbbf5baabc4ab01661faa91a693b2704f667e33585e4d63ba5069e27")
+	if err != nil {
+		t.Errorf("PrivateKeyFromString failed with error: %v", err.Error())
+	}
+
+	if !bytes.Equal(sk3.PublicKey().Serialize(), pkExpected) {
+		t.Errorf("sk3 pubkey is %v, expected %v", sk3.PublicKey().Serialize(), pkExpected)
+	}
 }

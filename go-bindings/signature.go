@@ -8,6 +8,7 @@ package blschia
 // #include "blschia.h"
 import "C"
 import (
+	"encoding/hex"
 	"errors"
 	"runtime"
 	"unsafe"
@@ -40,6 +41,15 @@ func InsecureSignatureFromBytes(data []byte) (*InsecureSignature, error) {
 
 	runtime.SetFinalizer(&sig, func(p *InsecureSignature) { p.Free() })
 	return &sig, nil
+}
+
+// InsecureSignatureFromString constructs a new insecure signature from hex string
+func InsecureSignatureFromString(hexString string) (*InsecureSignature, error) {
+	bytes, err := hex.DecodeString(hexString)
+	if err != nil {
+		return nil, err
+	}
+	return InsecureSignatureFromBytes(bytes)
 }
 
 // Serialize returns the byte representation of the signature
