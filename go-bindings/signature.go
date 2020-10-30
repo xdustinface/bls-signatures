@@ -225,7 +225,6 @@ func (sig *InsecureSignature) Verify(hashes [][]byte, publicKeys []*PublicKey) b
 	// Loop thru each message and add the key C ptr to the array of ptrs at index
 	for i, hash := range hashes {
 		cBytesPtr := C.CBytes(hash)
-		defer C.free(cBytesPtr)
 		C.SetPtrArray(cHashesPtr, cBytesPtr, C.int(i))
 	}
 
@@ -239,6 +238,10 @@ func (sig *InsecureSignature) Verify(hashes [][]byte, publicKeys []*PublicKey) b
 	}
 
 	verifyResult := bool(C.CInsecureSignatureVerify(sig.sig, cHashesPtr, cNumHashes, cPublicKeysPtr, cNumPublicKeys))
+
+	for i := range hashes {
+		C.free(C.GetPtrAtIndex(cHashesPtr, C.int(i)))
+	}
 
 	runtime.KeepAlive(sig)
 	runtime.KeepAlive(publicKeys)

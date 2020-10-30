@@ -88,7 +88,6 @@ func (ai *AggregationInfo) RemoveEntries(messages [][]byte, publicKeys []*Public
 	for i, msg := range messages {
 		// Get a C pointer to bytes
 		cMessagePtr := C.CBytes(msg)
-		defer C.free(cMessagePtr)
 		C.SetPtrArray(cMessageArrayPtr, cMessagePtr, C.int(i))
 	}
 
@@ -108,6 +107,10 @@ func (ai *AggregationInfo) RemoveEntries(messages [][]byte, publicKeys []*Public
 		cErrMsg := C.GetLastErrorMsg()
 		err := errors.New(C.GoString(cErrMsg))
 		return err
+	}
+
+	for i := range messages {
+		C.free(C.GetPtrAtIndex(cMessageArrayPtr, C.int(i)))
 	}
 
 	runtime.KeepAlive(ai)
