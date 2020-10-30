@@ -1,0 +1,24 @@
+name: Build and Test
+
+on: [push, pull_request]
+
+jobs:
+
+  job:
+    name: BLS Library
+    runs-on: ubuntu-latest
+    steps:
+
+    - name: Check out repo
+      uses: actions/checkout@v2
+
+    - name: Build src
+      run: |
+        mkdir build
+        cd build
+        cmake ..
+        make
+    - name: Test src
+      run: |
+        ./build/src/runtest
+
