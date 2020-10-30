@@ -111,7 +111,7 @@ void CSignatureSetAggregationInfo(CSignature inPtr, CAggregationInfo aiPtr) {
 
 CAggregationInfo CSignatureGetAggregationInfo(CSignature inPtr) {
     bls::Signature* sig = (bls::Signature*)inPtr;
-    return (bls::AggregationInfo*)(sig->GetAggregationInfo());
+    return new bls::AggregationInfo(*sig->GetAggregationInfo());
 }
 
 CSignature CSignatureAggregate(void **sigs, size_t len, bool *didErr) {

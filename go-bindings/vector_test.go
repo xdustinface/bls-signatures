@@ -251,7 +251,7 @@ func TestVectorAggregation(t *testing.T) {
 		t.Errorf("got %v, expected %v", aggPkBytes, aggPkExpected)
 	}
 
-	toMergeAIs := []bls.AggregationInfo{
+	toMergeAIs := []*bls.AggregationInfo{
 		sig1.GetAggregationInfo(),
 		sig2.GetAggregationInfo(),
 	}
@@ -267,7 +267,7 @@ func TestVectorAggregation(t *testing.T) {
 		t.Errorf("sig1 should have not have verified")
 	}
 
-	toMergeAIs = []bls.AggregationInfo{
+	toMergeAIs = []*bls.AggregationInfo{
 		sig3.GetAggregationInfo(),
 		sig4.GetAggregationInfo(),
 		sig5.GetAggregationInfo(),

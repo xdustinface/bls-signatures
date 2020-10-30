@@ -105,11 +105,14 @@ func (sig *Signature) SetAggregationInfo(ai *AggregationInfo) {
 }
 
 // GetAggregationInfo returns the aggregation info on this signature.
-func (sig *Signature) GetAggregationInfo() AggregationInfo {
+func (sig *Signature) GetAggregationInfo() *AggregationInfo {
 	var ai AggregationInfo
 	ai.ai = C.CSignatureGetAggregationInfo(sig.sig)
+
+	runtime.SetFinalizer(&ai, func(info *AggregationInfo) { info.Free() })
 	runtime.KeepAlive(sig)
-	return ai
+
+	return &ai
 }
 
 // SignatureAggregate aggregates many signatures using the secure aggregation

@@ -49,12 +49,12 @@ func TestSignature(t *testing.T) {
 
 	ai1 := sig1.GetAggregationInfo()
 	sig3, _ := bls.SignatureFromBytes(sig1Bytes)
-	sig3.SetAggregationInfo(&ai1)
+	sig3.SetAggregationInfo(ai1)
 	if !sig1.Equal(sig3) {
 		t.Error("sig1 should be equal to sig3")
 	}
 	ai3 := sig3.GetAggregationInfo()
-	if !ai1.Equal(&ai3) {
+	if !ai1.Equal(ai3) {
 		t.Error("ai1 should be equal to ai3")
 	}
 
@@ -103,21 +103,21 @@ func TestSignature(t *testing.T) {
 		t.Errorf("got %v, expected %v", aggSigInsBytes, aggSigInsExpectedBytes)
 	}
 
-	sig5, _ := bls.SignatureFromBytesWithAggregationInfo(sig1Bytes, &ai1)
+	sig5, _ := bls.SignatureFromBytesWithAggregationInfo(sig1Bytes, ai1)
 	if !sig5.Equal(sig1) {
 		t.Error("sig5 should be equal to sig1")
 	}
-	if !sig5.GetAggregationInfo().Equal(&ai1) {
+	if !sig5.GetAggregationInfo().Equal(ai1) {
 		t.Error("sig5 AggInfo should be equal to sig1 AggInfo")
 	}
 
 	ai2 := sig2.GetAggregationInfo()
 	sig6 := bls.SignatureFromInsecureSig(insecureSig2)
-	sig7 := bls.SignatureFromInsecureSigWithAggregationInfo(insecureSig2, &ai2)
+	sig7 := bls.SignatureFromInsecureSigWithAggregationInfo(insecureSig2, ai2)
 	if !sig6.Equal(sig7) {
 		t.Error("sig6 should be equal to sig7")
 	}
-	if !sig7.GetAggregationInfo().Equal(&ai2) {
+	if !sig7.GetAggregationInfo().Equal(ai2) {
 		t.Error("sig7 AggInfo should be equal to sig2 AggInfo")
 	}
 
