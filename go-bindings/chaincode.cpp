@@ -26,6 +26,7 @@ CChainCode CChainCodeFromBytes(void *p, bool *didErr) {
         *didErr = true;
         return nullptr;
     }
+    *didErr = false;
     return ccPtr;
 }
 

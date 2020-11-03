@@ -29,6 +29,7 @@ CExtendedPrivateKey CExtendedPrivateKeyFromSeed(void *seed, size_t len, bool *di
         *didErr = true;
         return nullptr;
     }
+    *didErr = false;
     return key;
 }
 
@@ -42,6 +43,7 @@ CExtendedPrivateKey CExtendedPrivateKeyFromBytes(void *p, bool *didErr) {
         *didErr = true;
         return nullptr;
     }
+    *didErr = false;
     return key;
 }
 
@@ -87,6 +89,7 @@ CExtendedPrivateKey CExtendedPrivateKeyPrivateChild(CExtendedPrivateKey inPtr, u
         *didErr = true;
         return nullptr;
     }
+    *didErr = false;
     return child;
 }
 
@@ -101,6 +104,7 @@ CExtendedPublicKey CExtendedPrivateKeyPublicChild(CExtendedPrivateKey inPtr, uin
         *didErr = true;
         return nullptr;
     }
+    *didErr = false;
     return child;
 }
 

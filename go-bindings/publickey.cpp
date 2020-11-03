@@ -53,6 +53,7 @@ CPublicKey CPublicKeyFromBytes(void *p, bool *didErr)  {
         *didErr = true;
         return nullptr;
     }
+    *didErr = false;
     return pkPtr;
 }
 
@@ -74,6 +75,7 @@ CPublicKey CPublicKeyAggregate(void **keys, size_t len, bool *didErr) {
         *didErr = true;
         return nullptr;
     }
+    *didErr = false;
 
     return kPtr;
 }
@@ -96,6 +98,7 @@ CPublicKey CPublicKeyAggregateInsecure(void **keys, size_t len, bool *didErr) {
         *didErr = true;
         return nullptr;
     }
+    *didErr = false;
 
     return kPtr;
 }

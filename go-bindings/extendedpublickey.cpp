@@ -28,6 +28,7 @@ CExtendedPublicKey CExtendedPublicKeyFromBytes(void *p, bool *didErr) {
         *didErr = true;
         return nullptr;
     }
+    *didErr = false;
     return key;
 }
 
@@ -61,6 +62,7 @@ CExtendedPublicKey CExtendedPublicKeyPublicChild(CExtendedPublicKey inPtr, uint3
         *didErr = true;
         return nullptr;
     }
+    *didErr = false;
     return child;
 }
 

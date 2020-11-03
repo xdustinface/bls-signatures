@@ -28,6 +28,7 @@ CPrivateKey CPrivateKeyFromSeed(void *p, int size, bool *didErr) {
         *didErr = true;
         return nullptr;
     }
+    *didErr = false;
     return skPtr;
 }
 
@@ -43,6 +44,7 @@ CPrivateKey CPrivateKeyFromBytes(void *p, bool modOrder, bool *didErr) {
         *didErr = true;
         return nullptr;
     }
+    *didErr = false;
 
     return skPtr;
 }
@@ -132,6 +134,7 @@ CPrivateKey CPrivateKeyAggregateInsecure(void **privateKeys,
         *didErr = true;
         return nullptr;
     }
+    *didErr = false;
 
     return key;
 }
@@ -163,6 +166,7 @@ CPrivateKey CPrivateKeyAggregate(void **privateKeys, size_t numPrivateKeys,
         *didErr = true;
         return nullptr;
     }
+    *didErr = false;
 
     return key;
 }

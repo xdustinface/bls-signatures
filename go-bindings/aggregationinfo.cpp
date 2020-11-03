@@ -78,6 +78,7 @@ CAggregationInfo CAggregationInfoFromVectors(void **publicKeys,
         *didErr = true;
         return nullptr;
     }
+    *didErr = false;
 
     return ai;
 }
@@ -127,6 +128,7 @@ void CAggregationInfoRemoveEntries(CAggregationInfo inPtr, void **messages,
         gErrMsg = ex.what();
         *didErr = true;
     }
+    *didErr = false;
 
     return;
 }

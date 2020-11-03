@@ -48,6 +48,7 @@ CInsecureSignature CInsecureSignatureFromBytes(void *p, bool *didErr) {
         *didErr = true;
         return nullptr;
     }
+    *didErr = false;
     return sigPtr;
 }
 
@@ -82,6 +83,7 @@ CSignature CSignatureFromBytes(void *p, bool *didErr) {
         *didErr = true;
         return nullptr;
     }
+    *didErr = false;
     return sigPtr;
 }
 
@@ -131,6 +133,7 @@ CSignature CSignatureAggregate(void **sigs, size_t len, bool *didErr) {
         *didErr = true;
         return nullptr;
     }
+    *didErr = false;
 
     return sPtr;
 }
@@ -156,6 +159,7 @@ CSignature CSignatureDivideBy(CSignature inPtr, void **sigs, size_t len,
         *didErr = true;
         return nullptr;
     }
+    *didErr = false;
 
     return quotient;
 }
@@ -209,6 +213,7 @@ CInsecureSignature CInsecureSignatureAggregate(void **signatures,
         *didErr = true;
         return nullptr;
     }
+    *didErr = false;
 
     return sig;
 }
@@ -261,6 +266,7 @@ CInsecureSignature CInsecureSignatureDivideBy(CInsecureSignature inPtr,
         *didErr = true;
         return nullptr;
     }
+    *didErr = false;
 
     return quotient;
 }
@@ -287,6 +293,7 @@ CSignature CSignatureFromBytesWithAggregationInfo(void *p,
         *didErr = true;
         return nullptr;
     }
+    *didErr = false;
     return sigPtr;
 }
 
