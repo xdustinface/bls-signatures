@@ -16,11 +16,18 @@
 #include "extendedpublickey.h"
 #include "publickey.h"
 #include "chaincode.h"
+#include "error.h"
 
-CExtendedPublicKey CExtendedPublicKeyFromBytes(void *p) {
-    bls::ExtendedPublicKey* key = new bls::ExtendedPublicKey(
-        bls::ExtendedPublicKey::FromBytes(static_cast<uint8_t*>(p))
-    );
+CExtendedPublicKey CExtendedPublicKeyFromBytes(void *p, bool *didErr) {
+    bls::ExtendedPublicKey* key;
+    try {
+        key = new bls::ExtendedPublicKey(bls::ExtendedPublicKey::FromBytes(static_cast<uint8_t*>(p)));
+    } catch (const std::exception& ex) {
+        // set err
+        gErrMsg = ex.what();
+        *didErr = true;
+        return nullptr;
+    }
     return key;
 }
 
@@ -43,11 +50,17 @@ int CExtendedPublicKeySizeBytes() {
     return bls::ExtendedPublicKey::EXTENDED_PUBLIC_KEY_SIZE;
 }
 
-CExtendedPublicKey CExtendedPublicKeyPublicChild(CExtendedPublicKey inPtr,
-    uint32_t i) {
+CExtendedPublicKey CExtendedPublicKeyPublicChild(CExtendedPublicKey inPtr, uint32_t i, bool *didErr) {
     bls::ExtendedPublicKey* key = (bls::ExtendedPublicKey*)inPtr;
-    bls::ExtendedPublicKey* child = new bls::ExtendedPublicKey(
-        key->PublicChild(i));
+    bls::ExtendedPublicKey* child;
+    try {
+        child = new bls::ExtendedPublicKey(key->PublicChild(i));
+    } catch (const std::exception& ex) {
+        // set err
+        gErrMsg = ex.what();
+        *didErr = true;
+        return nullptr;
+    }
     return child;
 }
 

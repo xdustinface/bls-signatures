@@ -17,18 +17,31 @@
 #include "privatekey.h"
 #include "publickey.h"
 #include "chaincode.h"
+#include "error.h"
 
-CExtendedPrivateKey CExtendedPrivateKeyFromSeed(void *seed, size_t len) {
-    bls::ExtendedPrivateKey* key = new bls::ExtendedPrivateKey(
-        bls::ExtendedPrivateKey::FromSeed(static_cast<uint8_t*>(seed), len)
-    );
+CExtendedPrivateKey CExtendedPrivateKeyFromSeed(void *seed, size_t len, bool *didErr) {
+    bls::ExtendedPrivateKey* key;
+    try {
+        key = new bls::ExtendedPrivateKey(bls::ExtendedPrivateKey::FromSeed(static_cast<uint8_t*>(seed), len));
+    } catch (const std::exception& ex) {
+        // set err
+        gErrMsg = ex.what();
+        *didErr = true;
+        return nullptr;
+    }
     return key;
 }
 
-CExtendedPrivateKey CExtendedPrivateKeyFromBytes(void *p) {
-    bls::ExtendedPrivateKey* key = new bls::ExtendedPrivateKey(
-        bls::ExtendedPrivateKey::FromBytes(static_cast<uint8_t*>(p))
-    );
+CExtendedPrivateKey CExtendedPrivateKeyFromBytes(void *p, bool *didErr) {
+    bls::ExtendedPrivateKey* key;
+    try {
+        key = new bls::ExtendedPrivateKey(bls::ExtendedPrivateKey::FromBytes(static_cast<uint8_t*>(p)));
+    } catch (const std::exception& ex) {
+        // set err
+        gErrMsg = ex.what();
+        *didErr = true;
+        return nullptr;
+    }
     return key;
 }
 
@@ -63,19 +76,31 @@ CChainCode CExtendedPrivateKeyGetChainCode(CExtendedPrivateKey inPtr) {
     return cc;
 }
 
-CExtendedPrivateKey CExtendedPrivateKeyPrivateChild(CExtendedPrivateKey inPtr,
-    uint32_t i) {
+CExtendedPrivateKey CExtendedPrivateKeyPrivateChild(CExtendedPrivateKey inPtr, uint32_t i, bool *didErr) {
     bls::ExtendedPrivateKey* key = (bls::ExtendedPrivateKey*)inPtr;
-    bls::ExtendedPrivateKey* child = new bls::ExtendedPrivateKey(
-        key->PrivateChild(i));
+    bls::ExtendedPrivateKey* child;
+    try {
+        child = new bls::ExtendedPrivateKey(key->PrivateChild(i));
+    } catch (const std::exception& ex) {
+        // set err
+        gErrMsg = ex.what();
+        *didErr = true;
+        return nullptr;
+    }
     return child;
 }
 
-CExtendedPublicKey CExtendedPrivateKeyPublicChild(CExtendedPrivateKey inPtr,
-    uint32_t i) {
+CExtendedPublicKey CExtendedPrivateKeyPublicChild(CExtendedPrivateKey inPtr, uint32_t i, bool *didErr) {
     bls::ExtendedPrivateKey* key = (bls::ExtendedPrivateKey*)inPtr;
-    bls::ExtendedPublicKey* child = new bls::ExtendedPublicKey(
-        key->PublicChild(i));
+    bls::ExtendedPublicKey* child;
+    try {
+        child = new bls::ExtendedPublicKey(key->PublicChild(i));
+    } catch (const std::exception& ex) {
+        // set err
+        gErrMsg = ex.what();
+        *didErr = true;
+        return nullptr;
+    }
     return child;
 }
 

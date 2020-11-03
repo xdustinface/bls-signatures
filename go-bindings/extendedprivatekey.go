@@ -11,6 +11,7 @@ package blschia
 import "C"
 import (
 	"encoding/hex"
+	"errors"
 	"runtime"
 )
 
@@ -22,29 +23,43 @@ type ExtendedPrivateKey struct {
 
 // ExtendedPrivateKeyFromSeed generates a master private key and chain code
 // from a seed
-func ExtendedPrivateKeyFromSeed(seed []byte) *ExtendedPrivateKey {
+func ExtendedPrivateKeyFromSeed(seed []byte) (*ExtendedPrivateKey, error) {
 	// Get a C pointer to bytes
 	cBytesPtr := C.CBytes(seed)
 	defer C.free(cBytesPtr)
 
 	var key ExtendedPrivateKey
-	key.key = C.CExtendedPrivateKeyFromSeed(cBytesPtr, C.size_t(len(seed)))
+	var cDidErr C.bool
+	key.key = C.CExtendedPrivateKeyFromSeed(cBytesPtr, C.size_t(len(seed)), &cDidErr)
+	if bool(cDidErr) {
+		cErrMsg := C.GetLastErrorMsg()
+		err := errors.New(C.GoString(cErrMsg))
+		return nil, err
+	}
+
 	runtime.SetFinalizer(&key, func(p *ExtendedPrivateKey) { p.Free() })
 
-	return &key
+	return &key, nil
 }
 
 // ExtendedPrivateKeyFromBytes parses a private key and chain code from bytes
-func ExtendedPrivateKeyFromBytes(data []byte) *ExtendedPrivateKey {
+func ExtendedPrivateKeyFromBytes(data []byte) (*ExtendedPrivateKey, error) {
 	// Get a C pointer to bytes
 	cBytesPtr := C.CBytes(data)
 	defer C.free(cBytesPtr)
 
 	var key ExtendedPrivateKey
-	key.key = C.CExtendedPrivateKeyFromBytes(cBytesPtr)
+	var cDidErr C.bool
+	key.key = C.CExtendedPrivateKeyFromBytes(cBytesPtr, &cDidErr)
+	if bool(cDidErr) {
+		cErrMsg := C.GetLastErrorMsg()
+		err := errors.New(C.GoString(cErrMsg))
+		return nil, err
+	}
+
 	runtime.SetFinalizer(&key, func(p *ExtendedPrivateKey) { p.Free() })
 
-	return &key
+	return &key, nil
 }
 
 // ExtendedPrivateKeyFromString constructs a new extended private key from hex string
@@ -53,7 +68,7 @@ func ExtendedPrivateKeyFromString(hexString string) (*ExtendedPrivateKey, error)
 	if err != nil {
 		return nil, err
 	}
-	return ExtendedPrivateKeyFromBytes(bytes), nil
+	return ExtendedPrivateKeyFromBytes(bytes)
 }
 
 // Free releases memory allocated by the key
@@ -95,17 +110,21 @@ func (key *ExtendedPrivateKey) GetChainCode() *ChainCode {
 }
 
 // PrivateChild derives a child ExtendedPrivateKey
-func (key *ExtendedPrivateKey) PrivateChild(i uint32) *ExtendedPrivateKey {
-	if key.GetDepth() >= 255 {
-		panic("cannot go further than 255 levels")
-	}
+func (key *ExtendedPrivateKey) PrivateChild(i uint32) (*ExtendedPrivateKey, error) {
+
 	var child ExtendedPrivateKey
-	child.key = C.CExtendedPrivateKeyPrivateChild(key.key, C.uint(i))
+	var cDidErr C.bool
+	child.key = C.CExtendedPrivateKeyPrivateChild(key.key, C.uint(i), &cDidErr)
+	if bool(cDidErr) {
+		cErrMsg := C.GetLastErrorMsg()
+		err := errors.New(C.GoString(cErrMsg))
+		return nil, err
+	}
 
 	runtime.SetFinalizer(&child, func(p *ExtendedPrivateKey) { p.Free() })
 	runtime.KeepAlive(key)
 
-	return &child
+	return &child, nil
 }
 
 // GetExtendedPublicKey returns the extended public key which corresponds to

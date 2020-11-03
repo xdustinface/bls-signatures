@@ -5,8 +5,12 @@ package blschia
 // #include <stdbool.h>
 // #include <stdlib.h>
 // #include "chaincode.h"
+// #include "blschia.h"
 import "C"
-import "runtime"
+import (
+	"errors"
+	"runtime"
+)
 
 // ChainCode is used in extended keys to derive child keys
 type ChainCode struct {
@@ -14,16 +18,23 @@ type ChainCode struct {
 }
 
 // ChainCodeFromBytes creates an ChainCode object given a byte slice
-func ChainCodeFromBytes(data []byte) *ChainCode {
+func ChainCodeFromBytes(data []byte) (*ChainCode, error) {
 	// Get a C pointer to bytes
 	cBytesPtr := C.CBytes(data)
 	defer C.free(cBytesPtr)
 
 	var cc ChainCode
-	cc.cc = C.CChainCodeFromBytes(cBytesPtr)
+	var cDidErr C.bool
+	cc.cc = C.CChainCodeFromBytes(cBytesPtr, &cDidErr)
+	if bool(cDidErr) {
+		cErrMsg := C.GetLastErrorMsg()
+		err := errors.New(C.GoString(cErrMsg))
+		return nil, err
+	}
+
 	runtime.SetFinalizer(&cc, func(p *ChainCode) { p.Free() })
 
-	return &cc
+	return &cc, nil
 }
 
 // Serialize returns the serialized byte representation of the ChainCode object

@@ -14,10 +14,18 @@
 
 #include "bls.hpp"
 #include "chaincode.h"
+#include "error.h"
 
-CChainCode CChainCodeFromBytes(void *p) {
-    bls::ChainCode* ccPtr = new bls::ChainCode(
-        bls::ChainCode::FromBytes(static_cast<uint8_t*>(p)));
+CChainCode CChainCodeFromBytes(void *p, bool *didErr) {
+    bls::ChainCode* ccPtr;
+    try {
+        ccPtr = new bls::ChainCode(bls::ChainCode::FromBytes(static_cast<uint8_t*>(p)));
+    } catch (const std::exception& ex) {
+        // set err
+        gErrMsg = ex.what();
+        *didErr = true;
+        return nullptr;
+    }
     return ccPtr;
 }
 

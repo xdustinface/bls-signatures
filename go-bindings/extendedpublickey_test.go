@@ -9,17 +9,29 @@ import (
 )
 
 func TestExtendedPublicKey(t *testing.T) {
-	xpub1 := bls.ExtendedPublicKeyFromBytes(xpubBytes)
+	xpub1, err := bls.ExtendedPublicKeyFromBytes(xpubBytes)
+	if err != nil {
+		t.Error(err)
+	}
+
 	xpub1GotBytes := xpub1.Serialize()
 	if !bytes.Equal(xpub1GotBytes, xpubBytes) {
 		t.Errorf("got %v, expected %v", xpub1GotBytes, xpubBytes)
 	}
 
-	xpub3 := bls.ExtendedPublicKeyFromBytes(xpub1GotBytes)
+	xpub3, err := bls.ExtendedPublicKeyFromBytes(xpub1GotBytes)
+	if err != nil {
+		t.Error(err)
+	}
+
 	if !xpub1.Equal(xpub3) {
 		t.Error("xpub1 should be equal to xpub3")
 	}
-	xpub2 := xpub1.PublicChild(1)
+	xpub2, err := xpub1.PublicChild(1)
+	if err != nil {
+		t.Error(err)
+	}
+
 	if xpub1.Equal(xpub2) {
 		t.Error("xpub1 should NOT be equal to xpub2")
 	}

@@ -31,7 +31,11 @@ func TestKeygen(t *testing.T) {
 
 	for i, tt := range tests {
 		t.Run(fmt.Sprintf("%d", i), func(st *testing.T) {
-			sk := bls.PrivateKeyFromSeed(tt.seed)
+			sk, err := bls.PrivateKeyFromSeed(tt.seed)
+			if err != nil {
+				t.Error(err)
+			}
+
 			if len(tt.secretKey) > 0 {
 				got := sk.Serialize()
 				if !bytes.Equal(got, tt.secretKey) {
@@ -120,7 +124,11 @@ func TestVectorHDKeys(t *testing.T) {
 		0x88, 0x11, 0x53, 0x11, 0xb8, 0xfe, 0xb1, 0xe3,
 	}
 
-	esk := bls.ExtendedPrivateKeyFromSeed(seed)
+	esk, err := bls.ExtendedPrivateKeyFromSeed(seed)
+	if err != nil {
+		t.Error(err)
+	}
+
 	eskFingerprint := esk.GetPublicKey().Fingerprint()
 	if eskFingerprint != pkFingerprint {
 		t.Errorf("got %v, expected %v", eskFingerprint, pkFingerprint)
@@ -131,7 +139,7 @@ func TestVectorHDKeys(t *testing.T) {
 		t.Errorf("got %v, expected %v", eskCCBytes, chainCodeBytes)
 	}
 
-	esk77 := esk.PrivateChild(77 + (1 << 31))
+	esk77, err := esk.PrivateChild(77 + (1 << 31))
 	esk77FP := esk77.GetPublicKey().Fingerprint()
 	esk77FPExpected := uint32(0xa8063dcf)
 	if esk77FP != esk77FPExpected {
@@ -149,15 +157,31 @@ func TestVectorHDKeys(t *testing.T) {
 		t.Errorf("got %v, expected %v", esk77CCBytes, esk77CCExpected)
 	}
 
-	fp317 := esk.PrivateChild(3).PrivateChild(17).GetPublicKey().Fingerprint()
+	fp317, err := esk.PrivateChild(3)
+	if err != nil {
+		t.Error(err)
+	}
+	fp317, err = fp317.PrivateChild(17)
+	if err != nil {
+		t.Error(err)
+	}
+	fp317Actual := fp317.GetPublicKey().Fingerprint()
 	fp317Expected := uint32(0xff26a31f)
-	if fp317 != fp317Expected {
+	if fp317Actual != fp317Expected {
 		t.Errorf("got %v, expected %v", fp317, fp317Expected)
 	}
 
-	pubFp317 := esk.GetExtendedPublicKey().PublicChild(3).PublicChild(17).GetPublicKey().Fingerprint()
+	pubFp317, err := esk.GetExtendedPublicKey().PublicChild(3)
+	if err != nil {
+		t.Error(err)
+	}
+	pubFp317, err = pubFp317.PublicChild(17)
+	if err != nil {
+		t.Error(err)
+	}
+
 	pubFp317Expected := uint32(0xff26a31f)
-	if pubFp317 != pubFp317Expected {
+	if pubFp317.GetPublicKey().Fingerprint() != pubFp317Expected {
 		t.Errorf("got %v, expected %v", pubFp317, pubFp317Expected)
 	}
 }
@@ -284,8 +308,15 @@ func TestVectorAggregation2(t *testing.T) {
 	m3 := []byte{9, 10, 11, 12, 13}
 	m4 := []byte{15, 63, 244, 92, 0, 1}
 
-	sk1 := bls.PrivateKeyFromSeed([]byte{1, 2, 3, 4, 5})
-	sk2 := bls.PrivateKeyFromSeed([]byte{1, 2, 3, 4, 5, 6})
+	sk1, err := bls.PrivateKeyFromSeed([]byte{1, 2, 3, 4, 5})
+	if err != nil {
+		t.Error(err)
+	}
+
+	sk2, err := bls.PrivateKeyFromSeed([]byte{1, 2, 3, 4, 5, 6})
+	if err != nil {
+		t.Error(err)
+	}
 
 	sig1 := sk1.Sign(m1)
 	sig2 := sk2.Sign(m2)
@@ -358,7 +389,7 @@ func TestVectorAggregation2(t *testing.T) {
 	}
 
 	// should throw with not a subset
-	_, err := quotient.DivideBy([]*bls.Signature{sig6})
+	_, err = quotient.DivideBy([]*bls.Signature{sig6})
 	if err == nil {
 		t.Error("did not get expected error")
 	}

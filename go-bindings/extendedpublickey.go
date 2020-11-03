@@ -8,6 +8,7 @@ package blschia
 import "C"
 import (
 	"encoding/hex"
+	"errors"
 	"runtime"
 )
 
@@ -17,16 +18,23 @@ type ExtendedPublicKey struct {
 }
 
 // ExtendedPublicKeyFromBytes parses a public key and chain code from bytes
-func ExtendedPublicKeyFromBytes(data []byte) *ExtendedPublicKey {
+func ExtendedPublicKeyFromBytes(data []byte) (*ExtendedPublicKey, error) {
 	// Get a C pointer to bytes
 	cBytesPtr := C.CBytes(data)
 	defer C.free(cBytesPtr)
 
 	var key ExtendedPublicKey
-	key.key = C.CExtendedPublicKeyFromBytes(cBytesPtr)
+	var cDidErr C.bool
+	key.key = C.CExtendedPublicKeyFromBytes(cBytesPtr, &cDidErr)
+	if bool(cDidErr) {
+		cErrMsg := C.GetLastErrorMsg()
+		err := errors.New(C.GoString(cErrMsg))
+		return nil, err
+	}
+
 	runtime.SetFinalizer(&key, func(p *ExtendedPublicKey) { p.Free() })
 
-	return &key
+	return &key, nil
 }
 
 // ExtendedPublicKeyFromString constructs a new extended public key from hex string
@@ -35,7 +43,7 @@ func ExtendedPublicKeyFromString(hexString string) (*ExtendedPublicKey, error) {
 	if err != nil {
 		return nil, err
 	}
-	return ExtendedPublicKeyFromBytes(bytes), nil
+	return ExtendedPublicKeyFromBytes(bytes)
 }
 
 // Free releases memory allocated by the key
@@ -64,25 +72,22 @@ func (key *ExtendedPublicKey) GetPublicKey() *PublicKey {
 	return &pk
 }
 
-var childComparator uint32 = (1 << 31)
-
 // PublicChild derives a child extended public key
-func (key *ExtendedPublicKey) PublicChild(i uint32) *ExtendedPublicKey {
-	// Hardened children have i >= 2^31. Non-hardened have i < 2^31
-	if i >= childComparator {
-		panic("cannot derive hardened children from public key")
-	}
-	if key.GetDepth() >= 255 {
-		panic("cannot go further than 255 levels")
-	}
+func (key *ExtendedPublicKey) PublicChild(i uint32) (*ExtendedPublicKey, error) {
 
 	var child ExtendedPublicKey
-	child.key = C.CExtendedPublicKeyPublicChild(key.key, C.uint(i))
+	var cDidErr C.bool
+	child.key = C.CExtendedPublicKeyPublicChild(key.key, C.uint(i), &cDidErr)
+	if bool(cDidErr) {
+		cErrMsg := C.GetLastErrorMsg()
+		err := errors.New(C.GoString(cErrMsg))
+		return nil, err
+	}
 
 	runtime.SetFinalizer(&child, func(p *ExtendedPublicKey) { p.Free() })
 	runtime.KeepAlive(key)
 
-	return &child
+	return &child, nil
 }
 
 // GetVersion returns the version bytes

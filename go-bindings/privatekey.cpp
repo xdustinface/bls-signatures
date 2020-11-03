@@ -18,10 +18,16 @@
 #include "blschia.h"
 #include "error.h"
 
-CPrivateKey CPrivateKeyFromSeed(void *p, int size) {
-    bls::PrivateKey* skPtr = new bls::PrivateKey(
-        bls::PrivateKey::FromSeed(static_cast<uint8_t *>(p), size)
-    );
+CPrivateKey CPrivateKeyFromSeed(void *p, int size, bool *didErr) {
+    bls::PrivateKey* skPtr;
+    try {
+        skPtr = new bls::PrivateKey(bls::PrivateKey::FromSeed(static_cast<uint8_t *>(p), size));
+    } catch (const std::exception& ex) {
+        // set err
+        gErrMsg = ex.what();
+        *didErr = true;
+        return nullptr;
+    }
     return skPtr;
 }
 

@@ -9,7 +9,10 @@ import (
 )
 
 func TestExtendedPrivateKey(t *testing.T) {
-	xprv1 := bls.ExtendedPrivateKeyFromSeed(xprvSeed)
+	xprv1, err := bls.ExtendedPrivateKeyFromSeed(xprvSeed)
+	if err != nil {
+		t.Error(err)
+	}
 
 	xprv1Bytes := xprv1.Serialize()
 	xprv1Expected := []byte{
@@ -28,7 +31,11 @@ func TestExtendedPrivateKey(t *testing.T) {
 		t.Errorf("got %v, expected %v", xprv1Bytes, xprv1Expected)
 	}
 
-	xprv2 := bls.ExtendedPrivateKeyFromBytes(xprv1Bytes)
+	xprv2, err := bls.ExtendedPrivateKeyFromBytes(xprv1Bytes)
+	if err != nil {
+		t.Error(err)
+	}
+
 	if !xprv2.Equal(xprv1) {
 		t.Error("xprv2 should be equal to xprv1")
 	}

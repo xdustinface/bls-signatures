@@ -25,15 +25,13 @@ extern "C" {
 
 typedef void* CExtendedPrivateKey;
 
-CExtendedPrivateKey CExtendedPrivateKeyFromSeed(void *seed, size_t len);
+CExtendedPrivateKey CExtendedPrivateKeyFromSeed(void *seed, size_t len, bool *didErr);
 
-CExtendedPrivateKey CExtendedPrivateKeyFromBytes(void *p);
+CExtendedPrivateKey CExtendedPrivateKeyFromBytes(void *p, bool *didErr);
 
-CExtendedPrivateKey CExtendedPrivateKeyPrivateChild(CExtendedPrivateKey inPtr,
-    uint32_t i);
+CExtendedPrivateKey CExtendedPrivateKeyPrivateChild(CExtendedPrivateKey inPtr, uint32_t i, bool *didErr);
 
-CExtendedPublicKey CExtendedPrivateKeyPublicChild(CExtendedPrivateKey inPtr,
-    uint32_t i);
+CExtendedPublicKey CExtendedPrivateKeyPublicChild(CExtendedPrivateKey inPtr, uint32_t i, bool *didErr);
 
 uint32_t CExtendedPrivateKeyGetVersion(CExtendedPrivateKey inPtr);
 uint8_t CExtendedPrivateKeyGetDepth(CExtendedPrivateKey inPtr);

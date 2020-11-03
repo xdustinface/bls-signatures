@@ -23,7 +23,7 @@ extern "C" {
 
 typedef void* CPrivateKey;
 
-CPrivateKey CPrivateKeyFromSeed(void *p, int size);
+CPrivateKey CPrivateKeyFromSeed(void *p, int size, bool *didErr);
 
 CPrivateKey CPrivateKeyFromBytes(void *p, bool modOrder, bool *didErr);
 

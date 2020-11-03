@@ -21,15 +21,23 @@ type PrivateKey struct {
 
 // PrivateKeyFromSeed generates a private key from a seed, similar to HD key
 // generation (hashes the seed), and reduces it mod the group order
-func PrivateKeyFromSeed(seed []byte) *PrivateKey {
+func PrivateKeyFromSeed(seed []byte) (*PrivateKey, error) {
 	// Get a C pointer to bytes
 	cBytesPtr := C.CBytes(seed)
 	defer C.free(cBytesPtr)
 
 	var sk PrivateKey
-	sk.sk = C.CPrivateKeyFromSeed(cBytesPtr, C.int(len(seed)))
+	var cDidErr C.bool
+	sk.sk = C.CPrivateKeyFromSeed(cBytesPtr, C.int(len(seed)), &cDidErr)
+	if bool(cDidErr) {
+		cErrMsg := C.GetLastErrorMsg()
+		err := errors.New(C.GoString(cErrMsg))
+		return nil, err
+	}
+
 	runtime.SetFinalizer(&sk, func(p *PrivateKey) { p.Free() })
-	return &sk
+
+	return &sk, nil
 }
 
 // PrivateKeyFromBytes constructs a new private key from bytes

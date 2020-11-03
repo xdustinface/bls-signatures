@@ -22,7 +22,11 @@ func TestPrivateKey(t *testing.T) {
 		0x69, 0x3b, 0x27, 0x04, 0xf6, 0x67, 0xe3, 0x35,
 		0x85, 0xe4, 0xd6, 0x3b, 0xa5, 0x06, 0x9e, 0x27,
 	}
-	sk := bls.PrivateKeyFromSeed(seed)
+	sk, err := bls.PrivateKeyFromSeed(seed)
+	if err != nil {
+		t.Error(err)
+	}
+
 	keyBytes := sk.Serialize()
 	if !bytes.Equal(keyBytes, result) {
 		t.Errorf("got %v, expected %v", keyBytes, result)

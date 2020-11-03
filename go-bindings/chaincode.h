@@ -21,7 +21,7 @@ extern "C" {
 
 typedef void* CChainCode;
 
-CChainCode CChainCodeFromBytes(void *p);
+CChainCode CChainCodeFromBytes(void *p, bool *didErr);
 
 void CChainCodeFree(CChainCode inPtr);
 void* CChainCodeSerialize(CChainCode inPtr);

@@ -23,10 +23,9 @@ extern "C" {
 
 typedef void* CExtendedPublicKey;
 
-CExtendedPublicKey CExtendedPublicKeyFromBytes(void *p);
+CExtendedPublicKey CExtendedPublicKeyFromBytes(void *p, bool *didErr);
 
-CExtendedPublicKey CExtendedPublicKeyPublicChild(CExtendedPublicKey inPtr,
-    uint32_t i);
+CExtendedPublicKey CExtendedPublicKeyPublicChild(CExtendedPublicKey inPtr, uint32_t i, bool *didErr);
 
 uint32_t CExtendedPublicKeyGetVersion(CExtendedPublicKey inPtr);
 uint8_t CExtendedPublicKeyGetDepth(CExtendedPublicKey inPtr);
