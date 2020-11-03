@@ -127,6 +127,24 @@ func (key *ExtendedPrivateKey) PrivateChild(i uint32) (*ExtendedPrivateKey, erro
 	return &child, nil
 }
 
+// PublicChild derives a child ExtendedPublicKey
+func (key *ExtendedPrivateKey) PublicChild(i uint32) (*ExtendedPublicKey, error) {
+
+	var child ExtendedPublicKey
+	var cDidErr C.bool
+	child.key = C.CExtendedPrivateKeyPublicChild(key.key, C.uint(i), &cDidErr)
+	if bool(cDidErr) {
+		cErrMsg := C.GetLastErrorMsg()
+		err := errors.New(C.GoString(cErrMsg))
+		return nil, err
+	}
+
+	runtime.SetFinalizer(&child, func(p *ExtendedPublicKey) { p.Free() })
+	runtime.KeepAlive(key)
+
+	return &child, nil
+}
+
 // GetExtendedPublicKey returns the extended public key which corresponds to
 // the extended private key for the given node
 func (key *ExtendedPrivateKey) GetExtendedPublicKey() *ExtendedPublicKey {
