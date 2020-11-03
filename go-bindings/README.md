@@ -11,13 +11,13 @@ scope of this README.
 
 It is necessary to follow the instructions one level up for building the Chia
 library, with a small difference: The repo needs to be cloned and built in
-$GOPATH.
+`$GOPATH`.
 
 ```sh
 # Clone BLS Signatures into $GOPATH and build the C++ library
-mkdir -pv $GOPATH/src/github.com/nmarley/
-git clone https://github.com/nmarley/bls-signatures.git $GOPATH/src/github.com/nmarley/bls-signatures
-cd $GOPATH/src/github.com/nmarley/bls-signatures
+mkdir -pv $GOPATH/src/github.com/dashpay/
+git clone https://github.com/dashpay/bls-signatures.git $GOPATH/src/github.com/dashpay/bls-signatures
+cd $GOPATH/src/github.com/dashpay/bls-signatures
 git submodule update --init --recursive
 mkdir build
 cd build
@@ -35,14 +35,10 @@ cd bls-signatures/go-bindings
 make
 ```
 
-You may need to install the golint and goimports tools if not already
+You may need to install the `golint` and `goimports` tools if not already
 installed:
 
 ```sh
 go get golang.org/x/tools/cmd/goimports
 go get -u golang.org/x/lint/golint
 ```
-
-## Usage
-
-Please see the [example Go program to demonstrate usage of these Go bindings](https://github.com/nmarley/go-bls-signatures-example).
