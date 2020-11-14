@@ -103,6 +103,55 @@ CPublicKey CPublicKeyAggregateInsecure(void **keys, size_t len, bool *didErr) {
     return kPtr;
 }
 
+CPublicKey CPublicKeyShare(void **publicKeys, size_t numPublicKeys, void *id, bool *didErr) {
+
+    std::vector<bls::PublicKey> vecPublicKeys;
+    for (int i = 0 ; i < numPublicKeys; ++i) {
+        bls::PublicKey* key = (bls::PublicKey*)publicKeys[i];
+        vecPublicKeys.push_back(*key);
+    }
+
+    bls::PublicKey* key;
+    try {
+        key = new bls::PublicKey(bls::BLS::PublicKeyShare(vecPublicKeys, (const uint8_t*)id));
+    } catch (const std::exception& ex) {
+        // set err
+        gErrMsg = ex.what();
+        *didErr = true;
+        return nullptr;
+    }
+    *didErr = false;
+
+    return key;
+}
+
+CPublicKey CPublicKeyRecover(void** publicKeys, void** ids, size_t nSize, bool* fErrorOut)
+{
+    std::vector<bls::PublicKey> vecPublicKeys;
+    std::vector<const uint8_t*> vecIds;
+
+    vecPublicKeys.reserve(nSize);
+    vecIds.reserve(nSize);
+
+    for (int i = 0; i < nSize; ++i) {
+        bls::PublicKey* publicKey = static_cast<bls::PublicKey*>(publicKeys[i]);
+        vecPublicKeys.push_back(*publicKey);
+        vecIds.push_back(static_cast<const uint8_t*>(ids[i]));
+    }
+
+    bls::PublicKey* recoveredPublicKey;
+    try {
+        recoveredPublicKey = new bls::PublicKey(bls::BLS::RecoverPublicKey(vecPublicKeys, vecIds));
+    } catch (const std::exception& ex) {
+        gErrMsg = ex.what();
+        *fErrorOut = true;
+        return nullptr;
+    }
+    *fErrorOut = false;
+
+    return recoveredPublicKey;
+}
+
 bool CPublicKeyIsEqual(CPublicKey aPtr, CPublicKey bPtr) {
     bls::PublicKey* a = (bls::PublicKey*)aPtr;
     bls::PublicKey* b = (bls::PublicKey*)bPtr;

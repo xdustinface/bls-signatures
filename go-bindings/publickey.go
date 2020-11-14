@@ -122,6 +122,73 @@ func PublicKeyAggregateInsecure(keys []*PublicKey) (*PublicKey, error) {
 	return &key, nil
 }
 
+// PublicKeyShare returns the public key share for the given id which is the evaluation
+// of the polynomial defined by publicKeys
+func PublicKeyShare(publicKeys []*PublicKey, id Hash) (*PublicKey, error) {
+	// Get a C pointer to an array of private keys
+	cPublicKeyArrPtr := C.AllocPtrArray(C.size_t(len(publicKeys)))
+	defer C.FreePtrArray(cPublicKeyArrPtr)
+	// Loop thru each key and add the key C ptr to the array of pointers at index i
+	for i, publicKey := range publicKeys {
+		C.SetPtrArray(cPublicKeyArrPtr, unsafe.Pointer(publicKey.pk), C.int(i))
+	}
+
+	cIdPtr := C.CBytes(id[:])
+	defer C.free(cIdPtr)
+
+	var cDidErr C.bool
+	var pk PublicKey
+	pk.pk = C.CPublicKeyShare(cPublicKeyArrPtr, C.size_t(len(publicKeys)), cIdPtr, &cDidErr)
+	if bool(cDidErr) {
+		cErrMsg := C.GetLastErrorMsg()
+		err := errors.New(C.GoString(cErrMsg))
+		return nil, err
+	}
+
+	runtime.SetFinalizer(&pk, func(p *PublicKey) { p.Free() })
+	runtime.KeepAlive(publicKeys)
+
+	return &pk, nil
+}
+
+// PublicKeyRecover try to recover a PublicKey
+func PublicKeyRecover(publicKeys []*PublicKey, ids []Hash) (*PublicKey, error) {
+
+	if len(publicKeys) != len(ids) {
+		return nil, errors.New("number of public keys must match the number of ids")
+	}
+
+	cKeyArrPtr := C.AllocPtrArray(C.size_t(len(publicKeys)))
+	defer C.FreePtrArray(cKeyArrPtr)
+	for i, publicKey := range publicKeys {
+		C.SetPtrArray(cKeyArrPtr, unsafe.Pointer(publicKey.pk), C.int(i))
+	}
+
+	cIdsArrPtr := C.AllocPtrArray(C.size_t(len(ids)))
+	defer C.FreePtrArray(cIdsArrPtr)
+	for i, id := range ids {
+		cIDPtr := C.CBytes(id[:])
+		C.SetPtrArray(cIdsArrPtr, cIDPtr, C.int(i))
+	}
+
+	var recoveredPublicKey PublicKey
+	var cDidErr C.bool
+	recoveredPublicKey.pk = C.CPublicKeyRecover(cKeyArrPtr, cIdsArrPtr, C.size_t(len(publicKeys)), &cDidErr)
+	if bool(cDidErr) {
+		cErrMsg := C.GetLastErrorMsg()
+		err := errors.New(C.GoString(cErrMsg))
+		return nil, err
+	}
+
+	for i := range ids {
+		C.free(C.GetPtrAtIndex(cIdsArrPtr, C.int(i)))
+	}
+
+	runtime.SetFinalizer(&recoveredPublicKey, func(p *PublicKey) { p.Free() })
+
+	return &recoveredPublicKey, nil
+}
+
 // Equal tests if one PublicKey object is equal to another
 func (pk *PublicKey) Equal(other *PublicKey) bool {
 	isEqual := bool(C.CPublicKeyIsEqual(pk.pk, other.pk))

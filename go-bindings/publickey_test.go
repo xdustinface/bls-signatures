@@ -63,4 +63,31 @@ func TestPublicKey(t *testing.T) {
 	if !bytes.Equal(aggPkInsBytes, aggPkInsExpectedBytes) {
 		t.Errorf("got %v, expected %v", aggPkInsBytes, aggPkInsExpectedBytes)
 	}
+
+	publicKeys := []*bls.PublicKey{pk1, pk2, pk3}
+	ids := []bls.Hash{{1}, {2}, {3}}
+
+	share1, err := bls.PublicKeyShare(publicKeys, ids[0])
+	if err != nil {
+		t.Errorf("PublicKeyShare failed with error: %v", err.Error())
+	}
+
+	share2, err := bls.PublicKeyShare(publicKeys, ids[1])
+	if err != nil {
+		t.Errorf("PublicKeyShare failed with error: %v", err.Error())
+	}
+
+	share3, err := bls.PublicKeyShare(publicKeys, ids[2])
+	if err != nil {
+		t.Errorf("PublicKeyShare failed with error: %v", err.Error())
+	}
+
+	recovered, err := bls.PublicKeyRecover([]*bls.PublicKey{share1, share2, share3}, ids)
+	if err != nil {
+		t.Errorf("PublicKeyRecover failed with error: %v", err.Error())
+	}
+
+	if !recovered.Equal(publicKeys[0]) {
+		t.Errorf("got %v, expected %v", recovered.Serialize(), publicKeys[0].Serialize())
+	}
 }

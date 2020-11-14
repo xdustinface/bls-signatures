@@ -29,6 +29,10 @@ CPublicKey CPublicKeyAggregateInsecure(void **keys, size_t len, bool *didErr);
 
 CPublicKey CPublicKeyAggregate(void **keys, size_t len, bool *didErr);
 
+CPublicKey CPublicKeyShare(void **publicKeys, size_t numPublicKeys, void *id, bool *didErr);
+
+CPublicKey CPublicKeyRecover(void** publicKeys, void** ids, size_t nSize, bool* fErrorOut);
+
 bool CPublicKeyIsEqual(CPublicKey aPtr, CPublicKey bPtr);
 
 void* CPublicKeySerialize(CPublicKey inPtr);
