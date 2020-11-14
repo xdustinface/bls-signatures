@@ -240,6 +240,7 @@ CInsecureSignature CInsecureSignatureRecover(void** signatures, void** ids, size
         *fErrorOut = true;
         return nullptr;
     }
+    *fErrorOut = false;
 
     return recoveredSig;
 }
