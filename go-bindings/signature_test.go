@@ -125,6 +125,33 @@ func TestSignature(t *testing.T) {
 	if !insecureSig4.Equal(insecureSig2) {
 		t.Error("insecureSig4 should be equal to insecureSig2")
 	}
+
+	insecureSignatures := []*bls.InsecureSignature{insecureSig1, insecureSig2, insecureSig3}
+	ids := []bls.Hash{{1}, {2}, {3}}
+
+	share1, err := bls.InsecureSignatureShare(insecureSignatures, ids[0])
+	if err != nil {
+		t.Errorf("InsecureSignatureShare failed with error: %v", err.Error())
+	}
+
+	share2, err := bls.InsecureSignatureShare(insecureSignatures, ids[1])
+	if err != nil {
+		t.Errorf("InsecureSignatureShare failed with error: %v", err.Error())
+	}
+
+	share3, err := bls.InsecureSignatureShare(insecureSignatures, ids[2])
+	if err != nil {
+		t.Errorf("InsecureSignatureShare failed with error: %v", err.Error())
+	}
+
+	recovered, err := bls.InsecureSignatureRecover([]*bls.InsecureSignature{share1, share2, share3}, ids)
+	if err != nil {
+		t.Errorf("InsecureSignatureRecover failed with error: %v", err.Error())
+	}
+
+	if !recovered.Equal(insecureSignatures[0]) {
+		t.Errorf("got %v, expected %v", recovered.Serialize(), insecureSignatures[0].Serialize())
+	}
 }
 
 func TestSignatureDivision(t *testing.T) {

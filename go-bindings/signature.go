@@ -285,6 +285,35 @@ func InsecureSignatureAggregate(signatures []*InsecureSignature) (*InsecureSigna
 	return &sig, nil
 }
 
+// InsecureSignatureShare returns the signature share for the given id which is the evaluation
+// of the polynomial defined by publicKeys
+func InsecureSignatureShare(signatures []*InsecureSignature, id Hash) (*InsecureSignature, error) {
+	// Get a C pointer to an array of private keys
+	cSignatureArrPtr := C.AllocPtrArray(C.size_t(len(signatures)))
+	defer C.FreePtrArray(cSignatureArrPtr)
+	// Loop thru each key and add the key C ptr to the array of pointers at index i
+	for i, signature := range signatures {
+		C.SetPtrArray(cSignatureArrPtr, unsafe.Pointer(signature.sig), C.int(i))
+	}
+
+	cIdPtr := C.CBytes(id[:])
+	defer C.free(cIdPtr)
+
+	var cDidErr C.bool
+	var sig InsecureSignature
+	sig.sig = C.CInsecureSignatureShare(cSignatureArrPtr, C.size_t(len(signatures)), cIdPtr, &cDidErr)
+	if bool(cDidErr) {
+		cErrMsg := C.GetLastErrorMsg()
+		err := errors.New(C.GoString(cErrMsg))
+		return nil, err
+	}
+
+	runtime.SetFinalizer(&sig, func(p *InsecureSignature) { p.Free() })
+	runtime.KeepAlive(signatures)
+
+	return &sig, nil
+}
+
 // InsecureSignatureRecover try to recover a threshold signature
 func InsecureSignatureRecover(signatures []*InsecureSignature, ids []Hash) (*InsecureSignature, error) {
 

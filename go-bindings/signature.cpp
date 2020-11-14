@@ -218,6 +218,28 @@ CInsecureSignature CInsecureSignatureAggregate(void **signatures,
     return sig;
 }
 
+CInsecureSignature CInsecureSignatureShare(void **signatures, size_t numSignatures, void *id, bool *didErr) {
+
+    std::vector<bls::InsecureSignature> vecSignatures;
+    for (int i = 0 ; i < numSignatures; ++i) {
+        bls::InsecureSignature* sig = (bls::InsecureSignature*)signatures[i];
+        vecSignatures.push_back(*sig);
+    }
+
+    bls::InsecureSignature* sig;
+    try {
+        sig = new bls::InsecureSignature(bls::BLS::SignatureShare(vecSignatures, (const uint8_t*)id));
+    } catch (const std::exception& ex) {
+        // set err
+        gErrMsg = ex.what();
+        *didErr = true;
+        return nullptr;
+    }
+    *didErr = false;
+
+    return sig;
+}
+
 CInsecureSignature CInsecureSignatureRecover(void** signatures, void** ids, size_t nSize, bool* fErrorOut)
 {
     std::vector<bls::InsecureSignature> vecSigs;

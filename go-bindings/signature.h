@@ -37,6 +37,8 @@ bool CInsecureSignatureVerify(CInsecureSignature inPtr, void **hashes,
 CInsecureSignature CInsecureSignatureAggregate(void **signatures,
     size_t numSignatures, bool *didErr);
 
+CInsecureSignature CInsecureSignatureShare(void **signatures, size_t numSignatures, void *id, bool *didErr);
+
 CInsecureSignature CInsecureSignatureRecover(void** signatures, void** ids, size_t nSize, bool* fErrorOut);
 
 CInsecureSignature CInsecureSignatureDivideBy(CInsecureSignature inPtr,
