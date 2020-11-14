@@ -63,10 +63,4 @@ func TestPublicKey(t *testing.T) {
 	if !bytes.Equal(aggPkInsBytes, aggPkInsExpectedBytes) {
 		t.Errorf("got %v, expected %v", aggPkInsBytes, aggPkInsExpectedBytes)
 	}
-
-	aggPkIns.Free()
-	aggPk.Free()
-	pk3.Free()
-	pk2.Free()
-	pk1.Free()
 }
