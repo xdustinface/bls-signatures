@@ -35,6 +35,10 @@ CPrivateKey CPrivateKeyAggregateInsecure(void **privateKeys,
 CPrivateKey CPrivateKeyAggregate(void **privateKeys, size_t numPrivateKeys,
     void **publicKeys, size_t numPublicKeys, bool *didErr);
 
+CPrivateKey CPrivateKeyShare(void **privateKeys, size_t numPrivateKeys, void *id, bool *didErr);
+
+CPrivateKey CPrivateKeyRecover(void** privateKeys, void** ids, size_t nSize, bool* fErrorOut);
+
 bool CPrivateKeyIsEqual(CPrivateKey aPtr, CPrivateKey bPtr);
 
 CInsecureSignature CPrivateKeySignInsecure(CPrivateKey inPtr, void *msg,

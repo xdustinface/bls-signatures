@@ -171,6 +171,56 @@ CPrivateKey CPrivateKeyAggregate(void **privateKeys, size_t numPrivateKeys,
     return key;
 }
 
+CPrivateKey CPrivateKeyShare(void **privateKeys, size_t numPrivateKeys, void *id, bool *didErr) {
+
+    std::vector<bls::PrivateKey> vecPrivateKeys;
+    for (int i = 0 ; i < numPrivateKeys; ++i) {
+        bls::PrivateKey* key = (bls::PrivateKey*)privateKeys[i];
+        vecPrivateKeys.push_back(*key);
+    }
+
+    bls::PrivateKey* key;
+    try {
+        key = new bls::PrivateKey(bls::BLS::PrivateKeyShare(vecPrivateKeys, (const uint8_t*)id));
+    } catch (const std::exception& ex) {
+        // set err
+        gErrMsg = ex.what();
+        *didErr = true;
+        return nullptr;
+    }
+    *didErr = false;
+
+    return key;
+}
+
+CPrivateKey CPrivateKeyRecover(void** privateKeys, void** ids, size_t nSize, bool* fErrorOut)
+{
+    std::vector<bls::PrivateKey> vecPrivateKeys;
+    std::vector<const uint8_t*> vecIds;
+
+    vecPrivateKeys.reserve(nSize);
+    vecIds.reserve(nSize);
+
+    for (int i = 0; i < nSize; ++i) {
+        bls::PrivateKey* privateKey = static_cast<bls::PrivateKey*>(privateKeys[i]);
+        vecPrivateKeys.push_back(*privateKey);
+        vecIds.push_back(static_cast<const uint8_t*>(ids[i]));
+    }
+
+    bls::PrivateKey* recoveredPrivateKey;
+    try {
+        recoveredPrivateKey = new bls::PrivateKey(bls::BLS::RecoverPrivateKey(vecPrivateKeys, vecIds));
+    } catch (const std::exception& ex) {
+        gErrMsg = ex.what();
+        *fErrorOut = true;
+        return nullptr;
+    }
+    *fErrorOut = false;
+
+    return recoveredPrivateKey;
+}
+
+
 bool CPrivateKeyIsEqual(CPrivateKey aPtr, CPrivateKey bPtr) {
     bls::PrivateKey* a = (bls::PrivateKey*)aPtr;
     bls::PrivateKey* b = (bls::PrivateKey*)bPtr;

@@ -124,4 +124,32 @@ func TestPrivateKey(t *testing.T) {
 	if !bytes.Equal(sk3.PublicKey().Serialize(), pkExpected) {
 		t.Errorf("sk3 pubkey is %v, expected %v", sk3.PublicKey().Serialize(), pkExpected)
 	}
+
+	privateKeys := []*bls.PrivateKey{sk1, sk2, sk3}
+	ids := []bls.Hash{{1}, {2}, {3}}
+
+	share1, err := bls.PrivateKeyShare(privateKeys, ids[0])
+	if err != nil {
+		t.Errorf("PrivateKeyShare failed with error: %v", err.Error())
+	}
+
+	share2, err := bls.PrivateKeyShare(privateKeys, ids[1])
+	if err != nil {
+		t.Errorf("PrivateKeyShare failed with error: %v", err.Error())
+	}
+
+	share3, err := bls.PrivateKeyShare(privateKeys, ids[2])
+	if err != nil {
+		t.Errorf("PrivateKeyShare failed with error: %v", err.Error())
+	}
+
+	recovered, err := bls.PrivateKeyRecover([]*bls.PrivateKey{share1, share2, share3}, ids)
+	if err != nil {
+		t.Errorf("PrivateKeyRecover failed with error: %v", err.Error())
+	}
+
+	if !recovered.Equal(privateKeys[0]) {
+		t.Errorf("got %v, expected %v", recovered.Serialize(), privateKeys[0].Serialize())
+	}
+
 }

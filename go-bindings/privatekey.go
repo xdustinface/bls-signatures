@@ -201,6 +201,73 @@ func PrivateKeyAggregate(privateKeys []*PrivateKey, publicKeys []*PublicKey) (*P
 	return &sk, nil
 }
 
+// PrivateKeyShare returns the secret key share for the given id which is the evaluation
+// of the polynomial defined by privateKeys
+func PrivateKeyShare(privateKeys []*PrivateKey, id Hash) (*PrivateKey, error) {
+	// Get a C pointer to an array of private keys
+	cPrivateKeyArrPtr := C.AllocPtrArray(C.size_t(len(privateKeys)))
+	defer C.FreePtrArray(cPrivateKeyArrPtr)
+	// Loop thru each key and add the key C ptr to the array of pointers at index i
+	for i, privateKey := range privateKeys {
+		C.SetPtrArray(cPrivateKeyArrPtr, unsafe.Pointer(privateKey.sk), C.int(i))
+	}
+
+	cIdPtr := C.CBytes(id[:])
+	defer C.free(cIdPtr)
+
+	var cDidErr C.bool
+	var sk PrivateKey
+	sk.sk = C.CPrivateKeyShare(cPrivateKeyArrPtr, C.size_t(len(privateKeys)), cIdPtr, &cDidErr)
+	if bool(cDidErr) {
+		cErrMsg := C.GetLastErrorMsg()
+		err := errors.New(C.GoString(cErrMsg))
+		return nil, err
+	}
+
+	runtime.SetFinalizer(&sk, func(p *PrivateKey) { p.Free() })
+	runtime.KeepAlive(privateKeys)
+
+	return &sk, nil
+}
+
+// PrivateKeyRecover try to recover a PrivateKey
+func PrivateKeyRecover(privateKeys []*PrivateKey, ids []Hash) (*PrivateKey, error) {
+
+	if len(privateKeys) != len(ids) {
+		return nil, errors.New("number of private keys must match the number of ids")
+	}
+
+	cKeysArrPtr := C.AllocPtrArray(C.size_t(len(privateKeys)))
+	defer C.FreePtrArray(cKeysArrPtr)
+	for i, privateKey := range privateKeys {
+		C.SetPtrArray(cKeysArrPtr, unsafe.Pointer(privateKey.sk), C.int(i))
+	}
+
+	cIdsArrPtr := C.AllocPtrArray(C.size_t(len(ids)))
+	defer C.FreePtrArray(cIdsArrPtr)
+	for i, id := range ids {
+		cIDPtr := C.CBytes(id[:])
+		C.SetPtrArray(cIdsArrPtr, cIDPtr, C.int(i))
+	}
+
+	var recoveredPrivateKey PrivateKey
+	var cDidErr C.bool
+	recoveredPrivateKey.sk = C.CPrivateKeyRecover(cKeysArrPtr, cIdsArrPtr, C.size_t(len(privateKeys)), &cDidErr)
+	if bool(cDidErr) {
+		cErrMsg := C.GetLastErrorMsg()
+		err := errors.New(C.GoString(cErrMsg))
+		return nil, err
+	}
+
+	for i := range ids {
+		C.free(C.GetPtrAtIndex(cIdsArrPtr, C.int(i)))
+	}
+
+	runtime.SetFinalizer(&recoveredPrivateKey, func(p *PrivateKey) { p.Free() })
+
+	return &recoveredPrivateKey, nil
+}
+
 // Equal tests if one PrivateKey object is equal to another
 func (sk *PrivateKey) Equal(other *PrivateKey) bool {
 	isEqual := bool(C.CPrivateKeyIsEqual(sk.sk, other.sk))
