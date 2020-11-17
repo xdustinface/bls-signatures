@@ -2,7 +2,7 @@
 
 | Build status | *master* | *develop*
 --- | --- | ---
-*Travis* | [![Travis-Master](https://travis-ci.org/dashpay/bls-signatures.svg?branch=master)](https://travis-ci.org/dashpay/bls-signatures) | [![Travis-Develop](https://travis-ci.org/dashpay/bls-signatures.svg?branch=develop)](https://travis-ci.org/dashpay/bls-signatures)
+*Travis* | [![Travis-Master](https://travis-ci.com/dashpay/bls-signatures.svg?branch=master)](https://travis-ci.com/dashpay/bls-signatures) | [![Travis-Develop](https://travis-ci.com/dashpay/bls-signatures.svg?branch=develop)](https://travis-ci.com/dashpay/bls-signatures)
 *Github* | ![Github-Master](https://github.com/dashpay/bls-signatures/workflows/Build%20and%20Test/badge.svg?branch=master) | ![Github-Develop](https://github.com/dashpay/bls-signatures/workflows/Build%20and%20Test/badge.svg?branch=develop)
 
 NOTE: THIS LIBRARY IS A DRAFT AND NOT YET REVIEWED FOR SECURITY
