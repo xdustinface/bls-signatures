@@ -296,12 +296,12 @@ func InsecureSignatureShare(signatures []*InsecureSignature, id Hash) (*Insecure
 		C.SetPtrArray(cSignatureArrPtr, unsafe.Pointer(signature.sig), C.int(i))
 	}
 
-	cIdPtr := C.CBytes(id[:])
-	defer C.free(cIdPtr)
+	cIDPtr := C.CBytes(id[:])
+	defer C.free(cIDPtr)
 
 	var cDidErr C.bool
 	var sig InsecureSignature
-	sig.sig = C.CInsecureSignatureShare(cSignatureArrPtr, C.size_t(len(signatures)), cIdPtr, &cDidErr)
+	sig.sig = C.CInsecureSignatureShare(cSignatureArrPtr, C.size_t(len(signatures)), cIDPtr, &cDidErr)
 	if bool(cDidErr) {
 		cErrMsg := C.GetLastErrorMsg()
 		err := errors.New(C.GoString(cErrMsg))

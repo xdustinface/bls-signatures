@@ -212,12 +212,12 @@ func PrivateKeyShare(privateKeys []*PrivateKey, id Hash) (*PrivateKey, error) {
 		C.SetPtrArray(cPrivateKeyArrPtr, unsafe.Pointer(privateKey.sk), C.int(i))
 	}
 
-	cIdPtr := C.CBytes(id[:])
-	defer C.free(cIdPtr)
+	cIDPtr := C.CBytes(id[:])
+	defer C.free(cIDPtr)
 
 	var cDidErr C.bool
 	var sk PrivateKey
-	sk.sk = C.CPrivateKeyShare(cPrivateKeyArrPtr, C.size_t(len(privateKeys)), cIdPtr, &cDidErr)
+	sk.sk = C.CPrivateKeyShare(cPrivateKeyArrPtr, C.size_t(len(privateKeys)), cIDPtr, &cDidErr)
 	if bool(cDidErr) {
 		cErrMsg := C.GetLastErrorMsg()
 		err := errors.New(C.GoString(cErrMsg))

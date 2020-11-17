@@ -133,12 +133,12 @@ func PublicKeyShare(publicKeys []*PublicKey, id Hash) (*PublicKey, error) {
 		C.SetPtrArray(cPublicKeyArrPtr, unsafe.Pointer(publicKey.pk), C.int(i))
 	}
 
-	cIdPtr := C.CBytes(id[:])
-	defer C.free(cIdPtr)
+	cIDPtr := C.CBytes(id[:])
+	defer C.free(cIDPtr)
 
 	var cDidErr C.bool
 	var pk PublicKey
-	pk.pk = C.CPublicKeyShare(cPublicKeyArrPtr, C.size_t(len(publicKeys)), cIdPtr, &cDidErr)
+	pk.pk = C.CPublicKeyShare(cPublicKeyArrPtr, C.size_t(len(publicKeys)), cIDPtr, &cDidErr)
 	if bool(cDidErr) {
 		cErrMsg := C.GetLastErrorMsg()
 		err := errors.New(C.GoString(cErrMsg))
