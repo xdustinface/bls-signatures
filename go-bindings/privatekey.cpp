@@ -14,7 +14,7 @@
 
 #include "privatekey.h"
 #include <vector>
-#include "bls.hpp"
+#include "chiabls/bls.hpp"
 #include "blschia.h"
 #include "error.h"
 

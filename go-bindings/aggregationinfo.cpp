@@ -14,7 +14,7 @@
 
 #include "aggregationinfo.h"
 #include <vector>
-#include "bls.hpp"
+#include "chiabls/bls.hpp"
 #include "publickey.h"
 #include "error.h"
 

@@ -14,7 +14,7 @@
 
 #include "blschia.h"
 #include <string>
-#include "bls.hpp"
+#include "chiabls/bls.hpp"
 #include "error.h"
 
 std::string gErrMsg;

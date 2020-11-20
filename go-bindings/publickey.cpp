@@ -15,7 +15,7 @@
 #include "publickey.h"
 #include <vector>
 #include <cstring>
-#include "bls.hpp"
+#include "chiabls/bls.hpp"
 #include "error.h"
 
 void* CPublicKeySerialize(CPublicKey inPtr) {

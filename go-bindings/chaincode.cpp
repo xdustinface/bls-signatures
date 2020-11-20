@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "bls.hpp"
+#include "chiabls/bls.hpp"
 #include "chaincode.h"
 #include "error.h"
 
