@@ -18,6 +18,7 @@ jobs:
         cd build
         cmake ..
         make
+        make install
     - name: Test src
       run: |
         ./build/src/runtest
