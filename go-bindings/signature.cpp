@@ -14,7 +14,7 @@
 
 #include "signature.h"
 #include <vector>
-#include "bls.hpp"
+#include "chiabls/bls.hpp"
 #include "error.h"
 
 void* CInsecureSignatureSerialize(CInsecureSignature inPtr) {
