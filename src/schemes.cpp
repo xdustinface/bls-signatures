@@ -13,6 +13,7 @@
 // limitations under the License.
 
 #include <algorithm>
+#include <cstring>
 #include <set>
 
 #include "bls.hpp"
@@ -642,4 +643,56 @@ bool PopSchemeMPL::FastAggregateVerify(const vector<Bytes>& pubkeys,
 
     return PopSchemeMPL::FastAggregateVerify(pkelements, message, G2Element::FromBytes(signature));
 }
+
+G2Element LegacySchemeMPL::Sign(const PrivateKey& seckey, const Bytes& message)
+{
+    return seckey.SignG2(message.begin(), message.size(), nullptr, 0, true);
+}
+
+bool LegacySchemeMPL::Verify(const G1Element &pubkey, const Bytes& message, const G2Element &signature)
+{
+    g1_t g1s[2];
+    g2_t g2s[2];
+
+    G1Element::Generator().Negate().ToNative(g1s[0]);
+    pubkey.ToNative(g1s[1]);
+    signature.ToNative(g2s[0]);
+    G2Element::FromMessage(message, nullptr, 0, true).ToNative(g2s[1]);
+
+    return CoreMPL::NativeVerify(g1s, g2s, 2);
+}
+
+G2Element LegacySchemeMPL::AggregateSecure(std::vector<G1Element> const &vecPublicKeys,
+                                          std::vector<G2Element> const &vecSignatures,
+                                          const Bytes& message) {
+    return CoreMPL::AggregateSecure(vecPublicKeys, vecSignatures, message, true);
+}
+
+bool LegacySchemeMPL::VerifySecure(const std::vector<G1Element>& vecPublicKeys,
+                                   const G2Element& signature,
+                                   const Bytes& message) {
+    return CoreMPL::VerifySecure(vecPublicKeys, signature, message, true);
+}
+
+bool LegacySchemeMPL::AggregateVerify(const vector<G1Element> &pubkeys,
+                                      const vector<Bytes> &messages,
+                                      const G2Element &signature)
+{
+    const size_t nPubKeys = pubkeys.size();
+    const auto arg_check = VerifyAggregateSignatureArguments(nPubKeys, messages.size(), signature);
+    if (arg_check != CONTINUE) return arg_check;
+
+    std::vector<g1_st> vecG1(nPubKeys + 1);
+    std::vector<g2_st> vecG2(nPubKeys + 1);
+    G1Element::Generator().Negate().ToNative(&vecG1[0]);
+    signature.ToNative(&vecG2[0]);
+
+    for (size_t i = 0; i < nPubKeys; ++i) {
+        pubkeys[i].ToNative(&vecG1[i + 1]);
+        G2Element::FromMessage(messages[i], nullptr, 0, true).ToNative(&vecG2[i + 1]);
+    }
+
+    return CoreMPL::NativeVerify((g1_t*)vecG1.data(), (g2_t*)vecG2.data(), nPubKeys + 1);
+}
+
 }  // end namespace bls
