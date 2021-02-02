@@ -40,6 +40,8 @@ class PrivateKey {
     // Aggregate many private keys into one (sum of keys mod order)
     static PrivateKey Aggregate(std::vector<PrivateKey> const &privateKeys);
 
+    PrivateKey();
+
     // Construct a private key from another private key. Allocates memory in
     // secure heap, and copies keydata.
     PrivateKey(const PrivateKey &k);
@@ -79,8 +81,6 @@ class PrivateKey {
         size_t dst_len) const;
     
  private:
-    // Don't allow public construction, force static methods
-    PrivateKey();
 
     // Allocate memory for private key
     void AllocateKeyData();
