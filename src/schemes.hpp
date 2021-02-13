@@ -71,6 +71,14 @@ public:
 
     virtual G1Element Aggregate(const vector<G1Element> &publicKeys);
 
+    virtual G2Element AggregateSecure(const std::vector<G1Element>& vecPublicKeys,
+                                      const std::vector<G2Element>& vecSignatures,
+                                      const Bytes& message);
+
+    virtual bool VerifySecure(const std::vector<G1Element>& vecPublicKeys,
+                              const G2Element& signature,
+                              const Bytes& message);
+
     virtual bool AggregateVerify(const vector<vector<uint8_t>> &pubkeys,
                                  const vector<vector<uint8_t>> &messages,
                                  const vector<uint8_t> &signature);
@@ -94,6 +102,14 @@ public:
 protected:
     const std::string& strCiphersuiteId;
     bool NativeVerify(g1_t *pubKeys, g2_t *mappedHashes, size_t length);
+    G2Element AggregateSecure(std::vector<G1Element> const &vecPublicKeys,
+                              std::vector<G2Element> const &vecSignatures,
+                              const Bytes& message,
+                              bool fLegacy);
+    bool VerifySecure(const std::vector<G1Element>& vecPublicKeys,
+                      const G2Element& signature,
+                      const Bytes& message,
+                      bool fLegacy);
 };
 
 class BasicSchemeMPL : public CoreMPL {
