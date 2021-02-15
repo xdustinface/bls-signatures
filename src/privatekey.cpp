@@ -154,6 +154,21 @@ G2Element operator*(const G2Element &a, const PrivateKey &k)
 
 G2Element operator*(const PrivateKey &k, const G2Element &a) { return a * k; }
 
+PrivateKey operator*(const PrivateKey& k, const bn_t& a)
+{
+    k.CheckKeyData();
+    bn_t order;
+    bn_new(order);
+    g2_get_ord(order);
+
+    PrivateKey ret;
+    bn_mul_comba(ret.keydata, k.keydata, a);
+    bn_mod_basic(ret.keydata, ret.keydata, order);
+    return ret;
+}
+
+PrivateKey operator*(const bn_t& a, const PrivateKey& k) { return a * k; }
+
 G2Element PrivateKey::GetG2Power(const G2Element& element) const
 {
     CheckKeyData();
