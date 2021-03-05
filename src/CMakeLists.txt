@@ -27,8 +27,11 @@ include_directories(
   ${relic_SOURCE_DIR}/include
   ${relic_BINARY_DIR}/include
   ${CMAKE_CURRENT_SOURCE_DIR}/../contrib/catch
-  ${GMP_INCLUDE_DIR}
   )
+
+if (GMP_FOUND)
+  include_directories(${GMP_INCLUDE_DIR})
+endif(GMP_FOUND)
 
 set(C_LIB ${CMAKE_BINARY_DIR}/libbls.a)
 
