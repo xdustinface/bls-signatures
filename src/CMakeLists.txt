@@ -7,14 +7,14 @@ include(FetchContent)
 if (DEFINED ENV{RELIC_MASTER})
   set(RELIC_GIT_TAG "origin/master")
 else ()
-  set(RELIC_GIT_TAG "9384f1c80cb80878aaafa7a64b7a6703d8d94f4c")
+  set(RELIC_GIT_TAG "11b1f4260660f42cbbd53bb34905d3dabda8d235")
 endif ()
 
 message(STATUS "Relic will be build from: ${RELIC_GIT_TAG}")
 
 FetchContent_Declare(
   relic
-  GIT_REPOSITORY https://github.com/relic-toolkit/relic.git
+  GIT_REPOSITORY https://github.com/xdustinface/relic.git
   GIT_TAG        ${RELIC_GIT_TAG}
 )
 FetchContent_MakeAvailable(relic)
