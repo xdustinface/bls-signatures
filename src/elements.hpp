@@ -18,7 +18,6 @@
 extern "C" {
 #include "relic.h"
 }
-#include "relic_conf.h"
 #include "util.hpp"
 
 #if defined GMP && ARITH == GMP

@@ -15,8 +15,6 @@
 #ifndef SRC_BLSPRIVATEKEY_HPP_
 #define SRC_BLSPRIVATEKEY_HPP_
 
-#include "relic_conf.h"
-
 #if defined GMP && ARITH == GMP
 #include <gmp.h>
 #endif
