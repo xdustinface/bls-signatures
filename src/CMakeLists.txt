@@ -82,9 +82,9 @@ set_target_properties(combined
         )
 
 file(GLOB includes "${CMAKE_CURRENT_SOURCE_DIR}/*.hpp")
-install(DIRECTORY ${relic_SOURCE_DIR}/include/ DESTINATION include/chiabls)
-install(DIRECTORY ${relic_BINARY_DIR}/include/ DESTINATION include/chiabls)
-install(FILES ${includes} DESTINATION include/chiabls)
+install(DIRECTORY ${relic_SOURCE_DIR}/include/ DESTINATION include/bls-dash)
+install(DIRECTORY ${relic_BINARY_DIR}/include/ DESTINATION include/bls-dash)
+install(FILES ${includes} DESTINATION include/bls-dash)
 install(FILES ${C_LIB} DESTINATION lib)
 
 if (BUILD_BLS_TESTS)
