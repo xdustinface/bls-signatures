@@ -32,9 +32,9 @@ if (GMP_FOUND)
   include_directories(${GMP_INCLUDES})
 endif(GMP_FOUND)
 
-set(C_LIB ${CMAKE_BINARY_DIR}/libbls.a)
+set(C_LIB ${CMAKE_BINARY_DIR}/libbls-dash.a)
 
-add_library(bls ${CMAKE_CURRENT_SOURCE_DIR}/privatekey.cpp)
+add_library(bls-dash ${CMAKE_CURRENT_SOURCE_DIR}/privatekey.cpp)
 
 add_library(blstmp ${HEADERS}
   ${CMAKE_CURRENT_SOURCE_DIR}/privatekey.cpp
@@ -74,7 +74,7 @@ add_custom_target(combined_custom
 
 add_library(combined STATIC IMPORTED GLOBAL)
 add_dependencies(combined combined_custom)
-target_link_libraries(bls combined)
+target_link_libraries(bls-dash combined)
 
 set_target_properties(combined
         PROPERTIES
