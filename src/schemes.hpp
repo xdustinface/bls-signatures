@@ -26,13 +26,12 @@
 
 #include "elements.hpp"
 #include "privatekey.hpp"
+#include "util.hpp"
 
 using std::vector;
 
 // These are all MPL schemes
 namespace bls {
-
-class Bytes;
 
 class CoreMPL {
 
@@ -83,8 +82,8 @@ public:
                                  const vector<vector<uint8_t>> &messages,
                                  const G2Element &signature);
 
-     virtual bool AggregateVerify(const vector<G1Element>& pubkeys,
-                                  const vector<Bytes>& messages,
+     virtual bool AggregateVerify(span<G1Element const> pubkeys,
+                                  span<Bytes const> messages,
                                   const G2Element& signature);
 
     PrivateKey DeriveChildSk(const PrivateKey& sk, uint32_t index);
@@ -112,8 +111,8 @@ public:
                          const vector<vector<uint8_t>> &messages,
                          const G2Element &signature) override;
 
-    bool AggregateVerify(const vector<G1Element>& pubkeys,
-                         const vector<Bytes>& messages,
+    bool AggregateVerify(span<G1Element const> pubkeys,
+                         span<Bytes const> messages,
                          const G2Element& signature) override;
 };
 
@@ -165,8 +164,8 @@ public:
                          const vector<vector<uint8_t>> &messages,
                          const G2Element &signature) override;
 
-    bool AggregateVerify(const vector<G1Element>& pubkeys,
-                         const vector<Bytes>& messages,
+    bool AggregateVerify(span<G1Element const> pubkeys,
+                         span<Bytes const> messages,
                          const G2Element& signature) override;
 };
 
