@@ -434,7 +434,12 @@ bool AugSchemeMPL::AggregateVerify(span<G1Element const> const pubkeys,
         return arg_check;
     }
 
+    size_t nMessagesSize{0};
+    for (const auto& message : messages) {
+        nMessagesSize += message.size();
+    }
     std::vector<uint8_t> storage;
+    storage.reserve(nMessagesSize + nPubKeys * G1Element::SIZE);
     for (std::size_t i = 0; i < nPubKeys; ++i) {
         auto const pubkey = pubkeys[i].Serialize();
         storage.insert(storage.end(), pubkey.begin(), pubkey.end());
