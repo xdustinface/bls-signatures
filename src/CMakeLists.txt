@@ -4,8 +4,8 @@ set (CMAKE_CXX_STANDARD 17)
 # CMake 3.14+
 include(FetchContent)
 
-if (DEFINED ENV{RELIC_MASTER})
-  set(RELIC_GIT_TAG "origin/master")
+if (DEFINED ENV{RELIC_MAIN})
+  set(RELIC_GIT_TAG "origin/main")
 else ()
   set(RELIC_GIT_TAG "186a15da6d07ef436dd8f00a4345838310a0aad3")
 endif ()
