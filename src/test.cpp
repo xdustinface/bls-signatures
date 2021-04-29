@@ -1284,9 +1284,9 @@ TEST_CASE("Legacy HD keys") {
                 .GetPublicKey();
         REQUIRE(sk3.GetG1Element() == pk4);
 
-        G2Element sig = LegacySchemeMPL().Sign(sk3, seed);
+        G2Element sig = LegacySchemeMPL().Sign(sk3, Bytes(seed));
 
-        REQUIRE(LegacySchemeMPL().Verify(sk3.GetG1Element(), seed, sig));
+        REQUIRE(LegacySchemeMPL().Verify(sk3.GetG1Element(), Bytes(seed), sig));
     }
 
     SECTION("Should prevent hardened pk derivation") {
@@ -1318,7 +1318,7 @@ TEST_CASE("Legacy HD keys") {
         cout << epk.GetPublicKey() << endl;
         cout << epk.GetChainCode() << endl;
 
-        G2Element sig1 = LegacySchemeMPL().Sign(esk.GetPrivateKey(), seed);
+        G2Element sig1 = LegacySchemeMPL().Sign(esk.GetPrivateKey(), Bytes(seed));
         cout << sig1 << endl;
     }
 
